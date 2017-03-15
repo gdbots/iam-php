@@ -3,21 +3,21 @@ declare(strict_types = 1);
 
 namespace Gdbots\Tests\Iam;
 
+use Acme\Schemas\Iam\Command\CreateUserV1;
+use Acme\Schemas\Iam\Event\UserCreatedV1;
+use Acme\Schemas\Iam\Node\UserV1;
 use Gdbots\Iam\CreateUserHandler;
 use Gdbots\Schemas\Ncr\Enum\NodeStatus;
 use Gdbots\Schemas\Ncr\NodeRef;
 use Gdbots\Schemas\Pbjx\Mixin\Event\Event;
 use Gdbots\Schemas\Pbjx\StreamId;
-use Gdbots\Tests\Iam\Fixtures\Command\CreateUser;
-use Gdbots\Tests\Iam\Fixtures\Event\UserCreated;
-use Gdbots\Tests\Iam\Fixtures\Node\User;
 
 class CreateUserHandlerTest extends AbstractPbjxTest
 {
     public function testHandleCommand()
     {
-        $command = CreateUser::create();
-        $node = User::fromArray(['_id' => '7afcc2f1-9654-46d1-8fc1-b0511df257db']);
+        $command = CreateUserV1::create();
+        $node = UserV1::fromArray(['_id' => '7afcc2f1-9654-46d1-8fc1-b0511df257db']);
         $node
             ->set('first_name', 'Homer')
             ->set('email', 'homer@simpson.com')
@@ -26,7 +26,7 @@ class CreateUserHandlerTest extends AbstractPbjxTest
             ->addToSet('roles', [NodeRef::fromString('gdbots:role:polly-shouldnt-be')]);
 
         $command->set('node', $node);
-        $expectedEvent = UserCreated::create();
+        $expectedEvent = UserCreatedV1::create();
         $expectedId = $node->get('_id');
 
         $handler = new CreateUserHandler();
