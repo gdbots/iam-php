@@ -7,6 +7,7 @@ use Acme\Schemas\Iam\Node\UserV1;
 use Acme\Schemas\Iam\Request\GetUserRequestV1;
 use Acme\Schemas\Iam\Request\GetUserResponseV1;
 use Gdbots\Iam\GetUserRequestHandler;
+use Gdbots\Pbj\SchemaQName;
 use Gdbots\Schemas\Ncr\NodeRef;
 
 class GetUserRequestHandlerTest extends AbstractPbjxTest
@@ -46,7 +47,7 @@ class GetUserRequestHandlerTest extends AbstractPbjxTest
         $handler->handleRequest($request, $this->pbjx);
     }
 
-    public function testGetByEmail()
+    public function testGetByEmailThatExists()
     {
         $node = UserV1::fromArray(['_id' => '7afcc2f1-9654-46d1-8fc1-b0511df257db', 'email' => 'homer@simpson.com']);
         $nodeRef = NodeRef::fromNode($node);
@@ -57,9 +58,21 @@ class GetUserRequestHandlerTest extends AbstractPbjxTest
             ->set('qname', $nodeRef->getQName()->toString())
             ->set('email', $email);
         $handler = new GetUserRequestHandler($this->ncr);
-        //$response = $handler->handleRequest($request, $this->pbjx);
+        $response = $handler->handleRequest($request, $this->pbjx);
 
-        //$this->assertSame(GetUserResponse::schema(), $response::schema());
-        //$this->assertSame($nodeRef->getId(), (string)$response->get('node')->get('_id'));
+        $this->assertSame(GetUserResponseV1::schema(), $response::schema());
+        $this->assertSame($nodeRef->getId(), (string)$response->get('node')->get('_id'));
+    }
+
+    /**
+     * @expectedException \Gdbots\Ncr\Exception\NodeNotFound
+     */
+    public function testGetByEmailThatDoesNotExists()
+    {
+        $request = GetUserRequestV1::create()
+            ->set('qname', SchemaQName::fromString('acme:user')->toString())
+            ->set('email', 'homer@simpson.com');
+        $handler = new GetUserRequestHandler($this->ncr);
+        $handler->handleRequest($request, $this->pbjx);
     }
 }
