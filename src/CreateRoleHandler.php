@@ -37,14 +37,6 @@ final class CreateRoleHandler implements CommandHandler
             ->set('creator_ref', $event->get('ctx_user_ref'))
             ->set('last_event_ref', $event->generateMessageRef());
 
-        if ($node->has('allowed')) {
-            $node->addToSet('allowed', $node->get('allowed', []));
-        }
-
-        if ($node->has('denied')) {
-            $node->addToSet('denied', $node->get('denied', []));
-        }
-
         $node->set('etag', $node->generateEtag(['etag', 'updated_at']));
         $event->set('node', $node);
 
