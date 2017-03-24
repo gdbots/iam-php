@@ -31,7 +31,6 @@ class GetUserBatchRequestHandler implements RequestHandler
         $this->ncr = $ncr;
     }
 
-
     /**
      * @param GetUserBatchRequest $request
      * @param Pbjx                  $pbjx
@@ -49,8 +48,8 @@ class GetUserBatchRequestHandler implements RequestHandler
 
         $getUserRequestHandler = new GetUserRequestHandler($this->ncr);
         foreach($nodeRefs as $nodeRef) {
-            // ??????
             $getUserSchema = MessageResolver::findOneUsingMixin(GetUserRequestV1Mixin::create(), 'iam', 'request');
+            /** @var GetUserRequestV1 $getUserRequest */
             $getUserRequest = $getUserSchema->createMessage();
             $getUserRequest->set('node_ref', $nodeRef);
 
