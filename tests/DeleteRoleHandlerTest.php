@@ -15,7 +15,7 @@ class DeleteRoleHandlerTest extends AbstractPbjxTest
 {
     public function testHandleCommand()
     {
-        $node_ref = NodeRef::fromString('acme:role:8695f644-0e7f-11e7-93ae-92361f002671');
+        $node_ref = NodeRef::fromString('acme:role:super-user');
 
         $command = DeleteRoleV1::create();
         $command->set('node_ref', $node_ref);
