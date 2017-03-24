@@ -10,6 +10,8 @@ use Gdbots\Pbjx\EventSubscriberTrait;
 use Gdbots\Pbjx\Pbjx;
 use Gdbots\Schemas\Iam\Mixin\RoleCreated\RoleCreated;
 use Gdbots\Schemas\Iam\Mixin\RoleDeleted\RoleDeleted;
+use Gdbots\Schemas\Iam\Mixin\RoleUpdated\RoleUpdated;
+use Gdbots\Schemas\Ncr\Enum\NodeStatus;
 use Gdbots\Schemas\Ncr\Mixin\Node\Node;
 
 class RoleProjector
@@ -46,12 +48,29 @@ class RoleProjector
     }
 
     /**
+     * @param RoleUpdated $event
+     * @param Pbjx        $pbjx
+     */
+    public function onUserUpdated(RoleUpdated $event, Pbjx $pbjx): void
+    {
+        $newNode = $event->get('new_node');
+        $expectedEtag = $event->isReplay() ? null : $event->get('old_etag');
+        $this->ncr->putNode($newNode, $expectedEtag);
+        if (!$event->isReplay()) {
+            $this->ncrSearch->indexNodes([$newNode]);
+        }
+    }
+
+    /**
      * @param RoleDeleted $event
      * @param Pbjx        $pbjx
      */
     public function onRoleDeleted(RoleDeleted $event, Pbjx $pbjx): void
     {
-        $this->ncr->deleteNode($event->get('node_ref'));
+        $node = $this->ncr->getNode($event->get('node_ref'), true);
+        // using soft delete for roles
+        $node->set('status', NodeStatus::DELETED());
+        $this->putNode($node, $event);
     }
 
     /**
