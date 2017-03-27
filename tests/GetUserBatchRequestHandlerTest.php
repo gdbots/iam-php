@@ -25,6 +25,7 @@ class GetUserBatchRequestHandlerTest extends AbstractPbjxTest
         $usersMap = $response->get('nodes');
 
         $this->assertInstanceOf('Acme\Schemas\Iam\Request\GetUserBatchResponseV1', $response);
+        $this->assertInstanceOf('Acme\Schemas\Iam\Node\UserV1', $usersMap['acme:user:7afcc2f1-9654-46d1-8fc1-b0511df257db']);
         $this->assertEquals(3, count($usersMap));
         $this->assertArrayHasKey('acme:user:7afcc2f1-9654-46d1-8fc1-b0511df257db', $usersMap);
         $this->assertArrayHasKey('acme:user:2b591594-10e2-11e7-93ae-92361f002671', $usersMap);

@@ -26,6 +26,7 @@ class GetRoleBatchRequestHandlerTest extends AbstractPbjxTest
         $rolesMap = $response->get('nodes');
 
         $this->assertInstanceOf('Acme\Schemas\Iam\Request\GetRoleBatchResponseV1', $response);
+        $this->assertInstanceOf('Acme\Schemas\Iam\Node\RoleV1', $rolesMap['acme:role:super-user']);
         $this->assertEquals(3, count($rolesMap));
         $this->assertArrayHasKey('acme:role:super-user', $rolesMap);
         $this->assertArrayHasKey('acme:role:article-editor', $rolesMap);
