@@ -12,7 +12,7 @@ use Gdbots\Schemas\Pbjx\StreamId;
 
 class GrantRolesToUserHandlerTest extends AbstractPbjxTest
 {
-    public function testHandlCommand()
+    public function testHandleCommand()
     {
         $node_ref = NodeRef::fromString('acme:user:8695f644-0e7f-11e7-93ae-92361f002671');
         $roles = [
@@ -36,7 +36,7 @@ class GrantRolesToUserHandlerTest extends AbstractPbjxTest
         });
     }
 
-    public function testHandlCommandRolesNotProvided()
+    public function testHandleCommandRolesNotProvided()
     {
         $node_ref = NodeRef::fromString('acme:user:8695f644-0e7f-11e7-93ae-92361f002671');
 

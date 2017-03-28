@@ -31,9 +31,12 @@ class RoleProjectorTest extends AbstractPbjxTest
         $this->roleProjecter = null;
     }
 
-    public function testOnRoleCreated()
+    /**
+     * testOnRoleCreated
+     */
+    public function testOnRoleCreated(): void
     {
-        $role = $this->createRoleForTest('super-user');
+        $role = $this->createRoleById('super-user');
         $event = RoleCreatedV1::create()->set('node', $role);
 
         $this->roleProjecter->onRoleCreated($event, $this->pbjx);
@@ -42,13 +45,16 @@ class RoleProjectorTest extends AbstractPbjxTest
         $this->assertTrue($role->equals($getRole));
     }
 
-    public function testOnRoleUpdated()
+    /**
+     * testOnRoleUpdated
+     */
+    public function testOnRoleUpdated(): void
     {
-        $oldRole = $this->createRoleForTest('super-user');
+        $oldRole = $this->createRoleById('super-user');
         $nodeRef = NodeRef::fromNode($oldRole);
         $this->ncr->putNode($oldRole, null);
 
-        $newRole = $this->createRoleForTest('super-user')
+        $newRole = $this->createRoleById('super-user')
             ->addToSet('allowed', ['acme:user:command:*'])
             ->addToSet('denied', ['acme:video:command:*', 'acme:plugin:command:*']);
 
@@ -69,14 +75,16 @@ class RoleProjectorTest extends AbstractPbjxTest
         $this->assertSame($event->get('new_etag'), $getRole->get('etag'));
     }
 
-    public function testOnRoleDeleted()
+    /**
+     * testOnRoleDeleted
+     */
+    public function testOnRoleDeleted(): void
     {
-        $role = $this->createRoleForTest('test-user');
+        $role = $this->createRoleById('test-user');
         $nodeRef = NodeRef::fromNode($role);
         $this->ncr->putNode($role, null);
 
-        $event = RoleDeletedV1::create()
-            ->set('node_ref', $nodeRef);
+        $event = RoleDeletedV1::create()->set('node_ref', $nodeRef);
 
         $this->roleProjecter->onRoleDeleted($event, $this->pbjx);
 
@@ -88,7 +96,7 @@ class RoleProjectorTest extends AbstractPbjxTest
      * @param string $id
      * @return RoleV1
      */
-    private function createRoleForTest(string $id): RoleV1
+    private function createRoleById(string $id): RoleV1
     {
         return RoleV1::fromArray(['_id' => RoleId::fromString($id)]);
     }
