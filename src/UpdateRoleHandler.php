@@ -48,8 +48,6 @@ class UpdateRoleHandler implements CommandHandler
                 ->set('creator_ref', $oldNode->get('creator_ref'));
         }
 
-        // we have the same rules for users
-        // so we currently keep the same for roles.
         // the status is either "published" or "deleted"
         if (!NodeStatus::DELETED()->equals($newNode->get('status'))) {
             $newNode->set('status', NodeStatus::PUBLISHED());

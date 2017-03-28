@@ -21,7 +21,7 @@ class RoleProjector
     protected $ncr;
 
     /**
-     * @param Ncr       $ncr
+     * @param Ncr $ncr
      */
     public function __construct(Ncr $ncr)
     {
@@ -75,11 +75,5 @@ class RoleProjector
             ->set('etag', $node->generateEtag(['etag', 'updated_at']));
 
         $this->ncr->putNode($node, $expectedEtag);
-
-        if ($event->isReplay()) {
-            // on replay we don't want to reindex, we generally do that
-            // as a separate task, in batches, using console ncr:reindex-nodes
-            return;
-        }
     }
 }

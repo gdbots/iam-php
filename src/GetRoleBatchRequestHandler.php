@@ -10,10 +10,7 @@ use Gdbots\Pbjx\RequestHandler;
 use Gdbots\Pbjx\RequestHandlerTrait;
 use Gdbots\Schemas\Iam\Mixin\GetRoleBatchRequest\GetRoleBatchRequest;
 use Gdbots\Schemas\Iam\Mixin\GetRoleBatchResponse\GetRoleBatchResponseV1Mixin;
-use Gdbots\Schemas\Iam\Mixin\GetRoleRequest\GetRoleRequestV1;
-use Gdbots\Schemas\Iam\Mixin\GetRoleRequest\GetRoleRequestV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\GetRoleBatchResponse\GetRoleBatchResponse;
-use Gdbots\Schemas\Iam\Mixin\Role\Role;
 use Gdbots\Schemas\Ncr\NodeRef;
 
 class GetRoleBatchRequestHandler implements RequestHandler

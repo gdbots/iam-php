@@ -11,9 +11,6 @@ use Gdbots\Pbjx\RequestHandlerTrait;
 use Gdbots\Schemas\Iam\Mixin\GetUserBatchRequest\GetUserBatchRequest;
 use Gdbots\Schemas\Iam\Mixin\GetUserBatchResponse\GetUserBatchResponse;
 use Gdbots\Schemas\Iam\Mixin\GetUserBatchResponse\GetUserBatchResponseV1Mixin;
-use Gdbots\Schemas\Iam\Mixin\GetUserRequest\GetUserRequestV1;
-use Gdbots\Schemas\Iam\Mixin\GetUserRequest\GetUserRequestV1Mixin;
-use Gdbots\Schemas\Iam\Mixin\User\User;
 use Gdbots\Schemas\Ncr\NodeRef;
 
 class GetUserBatchRequestHandler implements RequestHandler
