@@ -4,7 +4,6 @@ declare(strict_types = 1);
 namespace Gdbots\Iam;
 
 use Gdbots\Ncr\Ncr;
-use Gdbots\Ncr\NcrSearch;
 use Gdbots\Pbj\Message;
 use Gdbots\Pbjx\EventSubscriberTrait;
 use Gdbots\Pbjx\Pbjx;
@@ -21,17 +20,12 @@ class RoleProjector
     /** @var Ncr */
     protected $ncr;
 
-    /** @var NcrSearch */
-    protected $ncrSearch;
-
     /**
      * @param Ncr       $ncr
-     * @param NcrSearch $ncrSearch
      */
-    public function __construct(Ncr $ncr, NcrSearch $ncrSearch)
+    public function __construct(Ncr $ncr)
     {
         $this->ncr = $ncr;
-        $this->ncrSearch = $ncrSearch;
     }
 
     /**
@@ -42,23 +36,17 @@ class RoleProjector
     {
         $node = $event->get('node');
         $this->ncr->putNode($node, null);
-        if (!$event->isReplay()) {
-            $this->ncrSearch->indexNodes([$node]);
-        }
     }
 
     /**
      * @param RoleUpdated $event
      * @param Pbjx        $pbjx
      */
-    public function onUserUpdated(RoleUpdated $event, Pbjx $pbjx): void
+    public function onRoleUpdated(RoleUpdated $event, Pbjx $pbjx): void
     {
         $newNode = $event->get('new_node');
         $expectedEtag = $event->isReplay() ? null : $event->get('old_etag');
         $this->ncr->putNode($newNode, $expectedEtag);
-        if (!$event->isReplay()) {
-            $this->ncrSearch->indexNodes([$newNode]);
-        }
     }
 
     /**
@@ -93,7 +81,5 @@ class RoleProjector
             // as a separate task, in batches, using console ncr:reindex-nodes
             return;
         }
-
-        $this->ncrSearch->indexNodes([$node]);
     }
 }
