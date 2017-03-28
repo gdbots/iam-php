@@ -44,22 +44,24 @@ class GetUserBatchRequestHandler implements RequestHandler
         $response = $schema->createMessage();
 
         $nodeRefs = $request->get('node_refs', []);
-        //$consistentRead = $request->get('consistent_read', false);
 
-        $getUserRequestHandler = new GetUserRequestHandler($this->ncr);
-        foreach($nodeRefs as $nodeRef) {
-            $getUserSchema = MessageResolver::findOneUsingMixin(GetUserRequestV1Mixin::create(), 'iam', 'request');
-            /** @var GetUserRequestV1 $getUserRequest */
-            $getUserRequest = $getUserSchema->createMessage();
-            $getUserRequest->set('node_ref', $nodeRef);
-
-            $getUserResponse = $getUserRequestHandler->handleRequest($getUserRequest, $pbjx);
-
-            /** @var User $user */
-            $user = $getUserResponse->get('node');
-
-            $response->addToMap('nodes', NodeRef::fromNode($user)->toString(), $user);
+        if (empty($nodeRefs)) {
+            return $response;
         }
+
+        $users = $this->ncr->getNodes(
+            $nodeRefs,
+            $request->get('consistent_read', false),
+            $request->get('context', [])
+        );
+
+        foreach ($users as $nodeRef => $user) {
+            $response->addToMap('nodes', $nodeRef, $user);
+        }
+
+        $missing = array_keys(array_diff_key(array_flip(array_map('strval', $nodeRefs)), $users));
+        $missing = array_map(function ($str) { return NodeRef::fromString($str); }, $missing);
+        $response->addToSet('missing_node_refs', $missing);
 
         return $response;
     }

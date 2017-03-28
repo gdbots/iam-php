@@ -62,7 +62,7 @@ class GetRoleHistoryResquestHandlerTest extends AbstractPbjxTest
     /**
      * testHandlerRequestWithForward. Test request with forward true
      */
-    public function testHandlerRequestWithForward()
+    public function testHandleRequestWithForward()
     {
         $this->prepareEventsForStreamId('role.history:0000');
         // test with forward

@@ -79,4 +79,23 @@ class UniqueRoleValidatorTest extends AbstractPbjxTest
         $pbjxEvent = new PbjxEvent($command);
         $validator->validateUpdateRole($pbjxEvent);
     }
+
+    /**
+     * @expectedException Gdbots\Pbj\Exception\AssertionFailed
+     */
+    public function testValidateUpdateRoleWithoutNewNode()
+    {
+        $command = UpdateRoleV1::create();
+        $oldNode = RoleV1::fromArray([
+            '_id' => RoleId::fromString('super-user'),
+            'allowed' => ['acme:*'],
+            'denied' => []
+        ]);
+
+        $command->set('old_node', $oldNode);
+
+        $validator = new UniqueRoleValidator();
+        $pbjxEvent = new PbjxEvent($command);
+        $validator->validateUpdateRole($pbjxEvent);
+    }
 }

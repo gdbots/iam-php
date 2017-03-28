@@ -12,7 +12,7 @@ use Gdbots\Schemas\Iam\Mixin\UpdateRole\UpdateRole;
 use Gdbots\Schemas\Iam\RoleId;
 use Gdbots\Schemas\Pbjx\StreamId;
 
-class UniqueRoleValidator implements EventSubscriber
+final class UniqueRoleValidator implements EventSubscriber
 {
     /**
      * @param PbjxEvent $pbjxEvent

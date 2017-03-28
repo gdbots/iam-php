@@ -44,22 +44,24 @@ class GetRoleBatchRequestHandler implements RequestHandler
         $response = $schema->createMessage();
 
         $nodeRefs = $request->get('node_refs', []);
-        //$consistentRead = $request->get('consistent_read', false);
 
-        $getRoleRequestHandler = new GetRoleRequestHandler($this->ncr);
-        foreach($nodeRefs as $nodeRef) {
-            $getRoleSchema = MessageResolver::findOneUsingMixin(GetRoleRequestV1Mixin::create(), 'iam', 'request');
-            /** @var GetRoleRequestV1 $getRoleRequest */
-            $getRoleRequest = $getRoleSchema->createMessage();
-            $getRoleRequest->set('node_ref', $nodeRef);
-
-            $getRoleResponse = $getRoleRequestHandler->handleRequest($getRoleRequest, $pbjx);
-
-            /** @var Role $role */
-            $role = $getRoleResponse->get('node');
-
-            $response->addToMap('nodes', NodeRef::fromNode($role)->toString(), $role);
+        if (empty($nodeRefs)) {
+            return $response;
         }
+
+        $roles = $this->ncr->getNodes(
+            $nodeRefs,
+            $request->get('consistent_read', false),
+            $request->get('context', [])
+        );
+
+        foreach ($roles as $nodeRef => $role) {
+            $response->addToMap('nodes', $nodeRef, $role);
+        }
+
+        $missing = array_keys(array_diff_key(array_flip(array_map('strval', $nodeRefs)), $roles));
+        $missing = array_map(function ($str) { return NodeRef::fromString($str); }, $missing);
+        $response->addToSet('missing_node_refs', $missing);
 
         return $response;
     }
