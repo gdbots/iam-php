@@ -74,7 +74,7 @@ class UserProjectorTest extends AbstractPbjxTest
     }
 
     /**
-     *
+     * testOnUserUpdated
      */
     public function testOnUserUpdated(): void
     {
@@ -102,7 +102,7 @@ class UserProjectorTest extends AbstractPbjxTest
     }
 
     /**
-     *
+     * testOnUserUpdatedIsReplay
      */
     public function testOnUserUpdatedIsReplay(): void
     {
@@ -132,7 +132,7 @@ class UserProjectorTest extends AbstractPbjxTest
     }
 
     /**
-     *
+     * testOnUserDeleted
      */
     public function testOnUserDeleted(): void
     {
@@ -149,7 +149,17 @@ class UserProjectorTest extends AbstractPbjxTest
     }
 
     /**
-     *
+     * @expectedException Gdbots\Ncr\Exception\NodeNotFound
+     */
+    public function testOnUserDeletedNodeRefNotExists(): void
+    {
+        $event = UserDeletedV1::create()->set('node_ref', NodeRef::fromString('acme:user:7afcc2f1-9654-46d1-8fc1-b0511df257db'));
+
+        $this->userProjector->onUserDeleted($event, $this->pbjx);
+    }
+
+    /**
+     * testOnUserRolesGranted
      */
     public function testOnUserRolesGranted(): void
     {
@@ -172,6 +182,20 @@ class UserProjectorTest extends AbstractPbjxTest
     }
 
     /**
+     * @expectedException Gdbots\Ncr\Exception\NodeNotFound
+     */
+    public function testOnUserRolesGrantedNodeRefNotFound(): void
+    {
+        $role = $this->createRoleById('super-user');
+
+        $event = UserRolesGrantedV1::create()
+            ->set('node_ref', NodeRef::fromString('acme:user:7afcc2f1-9654-46d1-8fc1-b0511df257db'))
+            ->addToSet('roles', [NodeRef::fromNode($role)]);
+
+        $this->userProjector->onUserRolesGranted($event, $this->pbjx);
+    }
+
+    /**
      * testOnUserRolesRevoked
      */
     public function testOnUserRolesRevoked(): void
@@ -186,6 +210,7 @@ class UserProjectorTest extends AbstractPbjxTest
 
         $oldUser = $this->ncr->getNode($nodeRef);
         $oldUserRoles = array_flip(array_map('strval', $oldUser->get('roles')));
+
         // comfirm the old roles are there before revoke
         $this->assertArrayHasKey(NodeRef::fromNode($superRole)->toString(), $oldUserRoles);
         $this->assertArrayHasKey(NodeRef::fromNode($testRole)->toString(), $oldUserRoles);
@@ -197,9 +222,24 @@ class UserProjectorTest extends AbstractPbjxTest
         $this->userProjector->onUserRolesRevoked($event, $this->pbjx);
         $updatedUser = $this->ncr->getNode($nodeRef);
         $updatedUserRoles = array_flip(array_map('strval', $updatedUser->get('roles')));
+
         // comfirm the old roles are updated after revoke some of those
         $this->assertArrayNotHasKey(NodeRef::fromNode($superRole)->toString(), $updatedUserRoles);
         $this->assertArrayHasKey(NodeRef::fromNode($testRole)->toString(), $updatedUserRoles);
+    }
+
+    /**
+     * @expectedException Gdbots\Ncr\Exception\NodeNotFound
+     */
+    public function testOnUserRolesRevokedNodeRefNotFound(): void
+    {
+        $role = $this->createRoleById('super-user');
+
+        $event = UserRolesRevokedV1::create()
+            ->set('node_ref', NodeRef::fromString('acme:user:7afcc2f1-9654-46d1-8fc1-b0511df257db'))
+            ->addToSet('roles', [NodeRef::fromNode($role)]);
+
+        $this->userProjector->onUserRolesRevoked($event, $this->pbjx);
     }
 
     /**

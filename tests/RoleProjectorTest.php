@@ -46,6 +46,21 @@ class RoleProjectorTest extends AbstractPbjxTest
     }
 
     /**
+     * testOnRoleCreatedIsReplay
+     */
+    public function testOnRoleCreatedIsReplay(): void
+    {
+        $role = $this->createRoleById('super-user');
+        $event = RoleCreatedV1::create()->set('node', $role);
+        $event->isReplay(true);
+
+        $this->roleProjecter->onRoleCreated($event, $this->pbjx);
+        $getRole = $this->ncr->getNode(NodeRef::fromString('acme:role:super-user'));
+
+        $this->assertTrue($role->equals($getRole));
+    }
+
+    /**
      * testOnRoleUpdated
      */
     public function testOnRoleUpdated(): void
@@ -90,6 +105,16 @@ class RoleProjectorTest extends AbstractPbjxTest
 
         $deletedRole = $this->ncr->getNode($nodeRef);
         $this->assertEquals(NodeStatus::DELETED(), $deletedRole->get('status'));
+    }
+
+    /**
+     * @expectedException Gdbots\Ncr\Exception\NodeNotFound
+     */
+    public function testOnRoleDeletedNodeRefNotExists(): void
+    {
+        $event = RoleDeletedV1::create()->set('node_ref', NodeRef::fromString('acme:role:role-not-exists'));
+
+        $this->roleProjecter->onRoleDeleted($event, $this->pbjx);
     }
 
     /**

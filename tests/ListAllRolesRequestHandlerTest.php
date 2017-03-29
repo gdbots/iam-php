@@ -23,7 +23,7 @@ class ListAllRolesRequestHandlerTest extends AbstractPbjxTest
         $response = $handler->handleRequest($request, $this->pbjx);
         $roleNoderefs = $response->get('roles');
 
-        $this->assertEquals(2, count($roleNoderefs));
+        $this->assertCount(2, $roleNoderefs);
 
         $roles = [];
         foreach ($roleNoderefs as $roleNodeRef) {
