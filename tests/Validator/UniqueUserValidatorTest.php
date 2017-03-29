@@ -27,7 +27,10 @@ class UniqueUserValidatorTest extends AbstractPbjxTest
         );
     }
 
-    public function testValidateCreateUserThatDoesNotExist()
+    /**
+     * make sure no exceptions
+     */
+    public function testValidateCreateUserThatDoesNotExist(): void
     {
         $command = CreateUserV1::create();
         $node = UserV1::fromArray(['_id' => '7afcc2f1-9654-46d1-8fc1-b0511df257db', 'email' => 'homer@simpson.com']);
@@ -36,12 +39,15 @@ class UniqueUserValidatorTest extends AbstractPbjxTest
         $validator = new UniqueUserValidator();
         $pbjxEvent = new PbjxEvent($command);
         $validator->validateCreateUser($pbjxEvent);
+
+        // Assert no exceptions
+        $this->assertSame($command, $pbjxEvent->getMessage());
     }
 
     /**
      * @expectedException \Gdbots\Iam\Exception\UserAlreadyExists
      */
-    public function testValidateCreateUserThatDoesExistByEmail()
+    public function testValidateCreateUserThatDoesExistByEmail(): void
     {
         $command = CreateUserV1::create();
         $existingNode = UserV1::fromArray(['_id' => '7afcc2f1-9654-46d1-8fc1-b0511df257db', 'email' => 'homer@simpson.com']);
@@ -52,12 +58,15 @@ class UniqueUserValidatorTest extends AbstractPbjxTest
         $validator = new UniqueUserValidator();
         $pbjxEvent = new PbjxEvent($command);
         $validator->validateCreateUser($pbjxEvent);
+
+        // Assert no exceptions
+        $this->assertSame($command, $pbjxEvent->getMessage());
     }
 
     /**
      * @expectedException \Gdbots\Iam\Exception\UserAlreadyExists
      */
-    public function testValidateCreateUserThatDoesExistById()
+    public function testValidateCreateUserThatDoesExistById(): void
     {
         $command = CreateUserV1::create();
         $event = UserCreatedV1::create();
@@ -69,5 +78,8 @@ class UniqueUserValidatorTest extends AbstractPbjxTest
         $validator = new UniqueUserValidator();
         $pbjxEvent = new PbjxEvent($command);
         $validator->validateCreateUser($pbjxEvent);
+
+        // Assert no exceptions
+        $this->assertSame($command, $pbjxEvent->getMessage());
     }
 }

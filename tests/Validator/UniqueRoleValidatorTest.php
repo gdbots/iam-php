@@ -29,7 +29,10 @@ class UniqueRoleValidatorTest extends AbstractPbjxTest
         );
     }
 
-    public function testValidateCreateRole()
+    /**
+     * make sure no exceptions
+     */
+    public function testValidateCreateRole(): void
     {
         $command = CreateRoleV1::create();
         $node = RoleV1::fromArray(['_id' => RoleId::fromString('super-user')]);
@@ -38,12 +41,15 @@ class UniqueRoleValidatorTest extends AbstractPbjxTest
         $validator = new UniqueRoleValidator();
         $pbjxEvent = new PbjxEvent($command);
         $validator->validateCreateRole($pbjxEvent);
+
+        // Assert no exceptions
+        $this->assertSame($command, $pbjxEvent->getMessage());
     }
 
     /**
      * @expectedException \Gdbots\Iam\Exception\RoleAlreadyExists
      */
-    public function testValidateCreateRoleThatDoesExistById()
+    public function testValidateCreateRoleThatDoesExistById(): void
     {
         $command = CreateRoleV1::create();
         $event = RoleCreatedV1::create();
@@ -55,9 +61,16 @@ class UniqueRoleValidatorTest extends AbstractPbjxTest
         $validator = new UniqueRoleValidator();
         $pbjxEvent = new PbjxEvent($command);
         $validator->validateCreateRole($pbjxEvent);
+
+        // Assert no exceptions
+        $this->assertSame($command, $pbjxEvent->getMessage());
     }
 
-    public function testValidateUpdateRole()
+    /**
+     * test ValidateUpdateRole
+     * make sure no exceptions
+     */
+    public function testValidateUpdateRole(): void
     {
         $command = UpdateRoleV1::create();
         $oldNode = RoleV1::fromArray([
@@ -78,12 +91,15 @@ class UniqueRoleValidatorTest extends AbstractPbjxTest
         $validator = new UniqueRoleValidator();
         $pbjxEvent = new PbjxEvent($command);
         $validator->validateUpdateRole($pbjxEvent);
+
+        // Assert no exceptions
+        $this->assertSame($command, $pbjxEvent->getMessage());
     }
 
     /**
      * @expectedException Gdbots\Pbj\Exception\AssertionFailed
      */
-    public function testValidateUpdateRoleWithoutNewNode()
+    public function testValidateUpdateRoleWithoutNewNode(): void
     {
         $command = UpdateRoleV1::create();
         $oldNode = RoleV1::fromArray([
