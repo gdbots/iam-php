@@ -7,7 +7,6 @@
     "php": ">=7.1",
     "gdbots/ncr": "~0.1",
     "gdbots/pbjx": "~2.0",
-    "gdbots/schemas": "~1.1",
     "psr/log": "~1"
   },
   "require-dev": {
