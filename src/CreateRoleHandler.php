@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Gdbots\Iam;
 
@@ -35,7 +35,8 @@ final class CreateRoleHandler implements CommandHandler
             ->set('status', NodeStatus::PUBLISHED())
             ->set('created_at', $event->get('occurred_at'))
             ->set('creator_ref', $event->get('ctx_user_ref'))
-            ->set('last_event_ref', $event->generateMessageRef());
+            ->set('last_event_ref', $event->generateMessageRef())
+            ->set('title', (string)$node->get('_id'));
 
         $node->set('etag', $node->generateEtag(['etag', 'updated_at']));
         $event->set('node', $node);

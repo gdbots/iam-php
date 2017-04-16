@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Gdbots\Tests\Iam\Validator;
 
@@ -27,9 +27,6 @@ class UniqueUserValidatorTest extends AbstractPbjxTest
         );
     }
 
-    /**
-     * make sure no exceptions
-     */
     public function testValidateCreateUserThatDoesNotExist(): void
     {
         $command = CreateUserV1::create();
@@ -40,8 +37,8 @@ class UniqueUserValidatorTest extends AbstractPbjxTest
         $pbjxEvent = new PbjxEvent($command);
         $validator->validateCreateUser($pbjxEvent);
 
-        // Assert no exceptions
-        $this->assertSame($command, $pbjxEvent->getMessage());
+        // if it gets here it's a pass
+        $this->assertTrue(true);
     }
 
     /**
@@ -58,9 +55,6 @@ class UniqueUserValidatorTest extends AbstractPbjxTest
         $validator = new UniqueUserValidator();
         $pbjxEvent = new PbjxEvent($command);
         $validator->validateCreateUser($pbjxEvent);
-
-        // Assert no exceptions
-        $this->assertSame($command, $pbjxEvent->getMessage());
     }
 
     /**
@@ -78,8 +72,5 @@ class UniqueUserValidatorTest extends AbstractPbjxTest
         $validator = new UniqueUserValidator();
         $pbjxEvent = new PbjxEvent($command);
         $validator->validateCreateUser($pbjxEvent);
-
-        // Assert no exceptions
-        $this->assertSame($command, $pbjxEvent->getMessage());
     }
 }

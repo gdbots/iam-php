@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Gdbots\Iam\Validator;
 
@@ -40,12 +40,12 @@ final class UniqueRoleValidator implements EventSubscriber
     }
 
     /**
-     * @param PbjxEvent  $pbjxEvent
-     * @param RoleId     $roleId
+     * @param PbjxEvent $pbjxEvent
+     * @param RoleId    $roleId
      *
      * @throws RoleAlreadyExists
      */
-    protected function ensureIdDoesNotExist(PbjxEvent $pbjxEvent, RoleId $roleId): void
+    private function ensureIdDoesNotExist(PbjxEvent $pbjxEvent, RoleId $roleId): void
     {
         $pbjx = $pbjxEvent::getPbjx();
         $message = $pbjxEvent->getMessage();

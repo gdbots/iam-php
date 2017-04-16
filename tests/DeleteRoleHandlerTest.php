@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Gdbots\Tests\Iam;
 
@@ -10,24 +10,23 @@ use Gdbots\Schemas\Ncr\NodeRef;
 use Gdbots\Schemas\Pbjx\Mixin\Event\Event;
 use Gdbots\Schemas\Pbjx\StreamId;
 
-
 class DeleteRoleHandlerTest extends AbstractPbjxTest
 {
     public function testHandleCommand()
     {
-        $node_ref = NodeRef::fromString('acme:role:super-user');
-
+        $nodeRef = NodeRef::fromString('acme:role:super-user');
         $command = DeleteRoleV1::create();
-        $command->set('node_ref', $node_ref);
+        $command->set('node_ref', $nodeRef);
 
         $expectedEvent = RoleDeletedV1::create();
+        $expectedId = $nodeRef->getId();
 
         $handler = new DeleteRoleHandler();
         $handler->handleCommand($command, $this->pbjx);
 
-        $this->eventStore->pipeAllEvents(function(Event $event, StreamId $streamId) use ($expectedEvent) {
+        $this->eventStore->pipeAllEvents(function (Event $event, StreamId $streamId) use ($expectedEvent, $expectedId) {
             $this->assertSame($event::schema(), $expectedEvent::schema());
-            $this->assertSame(StreamId::fromString("role.history:{$event->get('node_ref')->getId()}")->toString(), $streamId->toString());
+            $this->assertSame(StreamId::fromString("role.history:{$expectedId}")->toString(), $streamId->toString());
         });
     }
 }

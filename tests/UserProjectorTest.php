@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Gdbots\Tests\Iam;
 
@@ -11,6 +11,7 @@ use Acme\Schemas\Iam\Event\UserUpdatedV1;
 use Acme\Schemas\Iam\Node\RoleV1;
 use Acme\Schemas\Iam\Node\UserV1;
 use Gdbots\Iam\UserProjector;
+use Gdbots\Ncr\NcrSearch;
 use Gdbots\Schemas\Iam\RoleId;
 use Gdbots\Schemas\Ncr\Enum\NodeStatus;
 use Gdbots\Schemas\Ncr\NodeRef;
@@ -20,27 +21,22 @@ class UserProjectorTest extends AbstractPbjxTest
     /** @var UserProjector */
     protected $userProjector;
 
+    /** @var NcrSearch|\PHPUnit_Framework_MockObject_MockObject */
     protected $ncrSearch;
 
     public function setup()
     {
         parent::setup();
-
-        $this->ncrSearch = $this->getMockBuilder('Gdbots\Tests\Iam\TestUtils\DummyNcrSearch')->getMock();
-
+        $this->ncrSearch = $this->getMockBuilder(MockNcrSearch::class)->getMock();
         $this->userProjector = new UserProjector($this->ncr, $this->ncrSearch);
     }
 
     public function tearDown()
     {
         parent::tearDown();
-
         $this->userProjector = null;
     }
 
-    /**
-     * testOnUserCreated
-     */
     public function testOnUserCreated(): void
     {
         $user = $this->createuserById('7afcc2f1-9654-46d1-8fc1-b0511df257db');
@@ -49,15 +45,12 @@ class UserProjectorTest extends AbstractPbjxTest
 
         $this->ncrSearch->expects($this->once())->method('indexNodes');
 
-        $this->userProjector->onUserCreated($event, $this->pbjx);
+        $this->userProjector->onUserCreated($event);
         $getUser = $this->ncr->getNode($nodeRef);
 
         $this->assertTrue($user->equals($getUser));
     }
 
-    /**
-     * testOnUserCreatedIsReplay
-     */
     public function testOnUserCreatedIsReplay(): void
     {
         $user = $this->createuserById('7afcc2f1-9654-46d1-8fc1-b0511df257db');
@@ -67,7 +60,7 @@ class UserProjectorTest extends AbstractPbjxTest
 
         $this->ncrSearch->expects($this->never())->method('indexNodes');
 
-        $this->userProjector->onUserCreated($event, $this->pbjx);
+        $this->userProjector->onUserCreated($event);
         $getUser = $this->ncr->getNode($nodeRef);
 
         $this->assertTrue($user->equals($getUser));
@@ -149,13 +142,13 @@ class UserProjectorTest extends AbstractPbjxTest
     }
 
     /**
-     * @expectedException Gdbots\Ncr\Exception\NodeNotFound
+     * @expectedException \Gdbots\Ncr\Exception\NodeNotFound
      */
     public function testOnUserDeletedNodeRefNotExists(): void
     {
         $event = UserDeletedV1::create()->set('node_ref', NodeRef::fromString('acme:user:7afcc2f1-9654-46d1-8fc1-b0511df257db'));
 
-        $this->userProjector->onUserDeleted($event, $this->pbjx);
+        $this->userProjector->onUserDeleted($event);
     }
 
     /**
@@ -182,7 +175,7 @@ class UserProjectorTest extends AbstractPbjxTest
     }
 
     /**
-     * @expectedException Gdbots\Ncr\Exception\NodeNotFound
+     * @expectedException \Gdbots\Ncr\Exception\NodeNotFound
      */
     public function testOnUserRolesGrantedNodeRefNotFound(): void
     {
@@ -192,7 +185,7 @@ class UserProjectorTest extends AbstractPbjxTest
             ->set('node_ref', NodeRef::fromString('acme:user:7afcc2f1-9654-46d1-8fc1-b0511df257db'))
             ->addToSet('roles', [NodeRef::fromNode($role)]);
 
-        $this->userProjector->onUserRolesGranted($event, $this->pbjx);
+        $this->userProjector->onUserRolesGranted($event);
     }
 
     /**
@@ -229,21 +222,22 @@ class UserProjectorTest extends AbstractPbjxTest
     }
 
     /**
-     * @expectedException Gdbots\Ncr\Exception\NodeNotFound
+     * @expectedException \Gdbots\Ncr\Exception\NodeNotFound
      */
     public function testOnUserRolesRevokedNodeRefNotFound(): void
     {
-        $role = $this->createRoleById('super-user');
+        $role = RoleV1::fromArray(['_id' => RoleId::fromString('super-user')]);
 
         $event = UserRolesRevokedV1::create()
             ->set('node_ref', NodeRef::fromString('acme:user:7afcc2f1-9654-46d1-8fc1-b0511df257db'))
             ->addToSet('roles', [NodeRef::fromNode($role)]);
 
-        $this->userProjector->onUserRolesRevoked($event, $this->pbjx);
+        $this->userProjector->onUserRolesRevoked($event);
     }
 
     /**
      * @param string $id
+     *
      * @return UserV1
      */
     private function createUserById(string $id): UserV1
@@ -253,6 +247,7 @@ class UserProjectorTest extends AbstractPbjxTest
 
     /**
      * @param string $id
+     *
      * @return RoleV1
      */
     private function createRoleById(string $id): RoleV1

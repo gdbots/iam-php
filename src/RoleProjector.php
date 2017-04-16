@@ -1,17 +1,16 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Gdbots\Iam;
 
 use Gdbots\Ncr\Ncr;
-use Gdbots\Pbj\Message;
 use Gdbots\Pbjx\EventSubscriberTrait;
-use Gdbots\Pbjx\Pbjx;
 use Gdbots\Schemas\Iam\Mixin\RoleCreated\RoleCreated;
 use Gdbots\Schemas\Iam\Mixin\RoleDeleted\RoleDeleted;
 use Gdbots\Schemas\Iam\Mixin\RoleUpdated\RoleUpdated;
 use Gdbots\Schemas\Ncr\Enum\NodeStatus;
 use Gdbots\Schemas\Ncr\Mixin\Node\Node;
+use Gdbots\Schemas\Pbjx\Mixin\Event\Event;
 
 class RoleProjector
 {
@@ -30,19 +29,17 @@ class RoleProjector
 
     /**
      * @param RoleCreated $event
-     * @param Pbjx        $pbjx
      */
-    public function onRoleCreated(RoleCreated $event, Pbjx $pbjx): void
+    public function onRoleCreated(RoleCreated $event): void
     {
         $node = $event->get('node');
-        $this->ncr->putNode($node, null);
+        $this->ncr->putNode($node);
     }
 
     /**
      * @param RoleUpdated $event
-     * @param Pbjx        $pbjx
      */
-    public function onRoleUpdated(RoleUpdated $event, Pbjx $pbjx): void
+    public function onRoleUpdated(RoleUpdated $event): void
     {
         $newNode = $event->get('new_node');
         $expectedEtag = $event->isReplay() ? null : $event->get('old_etag');
@@ -51,9 +48,8 @@ class RoleProjector
 
     /**
      * @param RoleDeleted $event
-     * @param Pbjx        $pbjx
      */
-    public function onRoleDeleted(RoleDeleted $event, Pbjx $pbjx): void
+    public function onRoleDeleted(RoleDeleted $event): void
     {
         $node = $this->ncr->getNode($event->get('node_ref'), true);
         // using soft delete for roles
@@ -62,10 +58,10 @@ class RoleProjector
     }
 
     /**
-     * @param Node    $node
-     * @param Message $event
+     * @param Node  $node
+     * @param Event $event
      */
-    protected function putNode(Node $node, Message $event): void
+    protected function putNode(Node $node, Event $event): void
     {
         $expectedEtag = $node->get('etag');
         $node

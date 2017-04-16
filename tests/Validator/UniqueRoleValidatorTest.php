@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Gdbots\Tests\Iam\Validator;
 
@@ -29,9 +29,6 @@ class UniqueRoleValidatorTest extends AbstractPbjxTest
         );
     }
 
-    /**
-     * make sure no exceptions
-     */
     public function testValidateCreateRole(): void
     {
         $command = CreateRoleV1::create();
@@ -42,8 +39,8 @@ class UniqueRoleValidatorTest extends AbstractPbjxTest
         $pbjxEvent = new PbjxEvent($command);
         $validator->validateCreateRole($pbjxEvent);
 
-        // Assert no exceptions
-        $this->assertSame($command, $pbjxEvent->getMessage());
+        // if it gets here it's a pass
+        $this->assertTrue(true);
     }
 
     /**
@@ -61,28 +58,21 @@ class UniqueRoleValidatorTest extends AbstractPbjxTest
         $validator = new UniqueRoleValidator();
         $pbjxEvent = new PbjxEvent($command);
         $validator->validateCreateRole($pbjxEvent);
-
-        // Assert no exceptions
-        $this->assertSame($command, $pbjxEvent->getMessage());
     }
 
-    /**
-     * test ValidateUpdateRole
-     * make sure no exceptions
-     */
     public function testValidateUpdateRole(): void
     {
         $command = UpdateRoleV1::create();
         $oldNode = RoleV1::fromArray([
-            '_id' => RoleId::fromString('super-user'),
+            '_id'     => RoleId::fromString('super-user'),
             'allowed' => ['acme:*'],
-            'denied' => []
+            'denied'  => [],
         ]);
 
         $newNode = RoleV1::fromArray([
-            '_id' => RoleId::fromString('super-user'),
+            '_id'     => RoleId::fromString('super-user'),
             'allowed' => [],
-            'denied' => ['acme:*']
+            'denied'  => ['acme:*'],
         ]);
 
         $command->set('old_node', $oldNode);
@@ -92,20 +82,20 @@ class UniqueRoleValidatorTest extends AbstractPbjxTest
         $pbjxEvent = new PbjxEvent($command);
         $validator->validateUpdateRole($pbjxEvent);
 
-        // Assert no exceptions
-        $this->assertSame($command, $pbjxEvent->getMessage());
+        // if it gets here it's a pass
+        $this->assertTrue(true);
     }
 
     /**
-     * @expectedException Gdbots\Pbj\Exception\AssertionFailed
+     * @expectedException \Gdbots\Pbj\Exception\AssertionFailed
      */
     public function testValidateUpdateRoleWithoutNewNode(): void
     {
         $command = UpdateRoleV1::create();
         $oldNode = RoleV1::fromArray([
-            '_id' => RoleId::fromString('super-user'),
+            '_id'     => RoleId::fromString('super-user'),
             'allowed' => ['acme:*'],
-            'denied' => []
+            'denied'  => [],
         ]);
 
         $command->set('old_node', $oldNode);

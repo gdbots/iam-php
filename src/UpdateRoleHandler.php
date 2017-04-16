@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Gdbots\Iam;
 
@@ -13,7 +13,7 @@ use Gdbots\Schemas\Iam\Mixin\UpdateRole\UpdateRole;
 use Gdbots\Schemas\Ncr\Enum\NodeStatus;
 use Gdbots\Schemas\Pbjx\StreamId;
 
-class UpdateRoleHandler implements CommandHandler
+final class UpdateRoleHandler implements CommandHandler
 {
     use CommandHandlerTrait;
 
@@ -31,7 +31,8 @@ class UpdateRoleHandler implements CommandHandler
         $newNode
             ->set('updated_at', $event->get('occurred_at'))
             ->set('updater_ref', $event->get('ctx_user_ref'))
-            ->set('last_event_ref', $event->generateMessageRef());
+            ->set('last_event_ref', $event->generateMessageRef())
+            ->set('title', (string)$newNode->get('_id'));
 
         if ($command->has('old_node')) {
             $oldNode = $command->get('old_node');

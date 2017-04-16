@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Gdbots\Tests\Iam;
 
@@ -108,7 +108,7 @@ class RoleProjectorTest extends AbstractPbjxTest
     }
 
     /**
-     * @expectedException Gdbots\Ncr\Exception\NodeNotFound
+     * @expectedException \Gdbots\Ncr\Exception\NodeNotFound
      */
     public function testOnRoleDeletedNodeRefNotExists(): void
     {
@@ -119,6 +119,7 @@ class RoleProjectorTest extends AbstractPbjxTest
 
     /**
      * @param string $id
+     *
      * @return RoleV1
      */
     private function createRoleById(string $id): RoleV1

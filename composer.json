@@ -5,9 +5,7 @@
   "license": "Apache-2.0",
   "require": {
     "php": ">=7.1",
-    "gdbots/ncr": "~0.1",
-    "gdbots/pbjx": "~2.0",
-    "psr/log": "~1"
+    "gdbots/ncr": "~0.1"
   },
   "require-dev": {
     "phpunit/phpunit": "~6.0",
@@ -22,6 +20,9 @@
     "psr-4": {
       "Gdbots\\Tests\\Iam\\": "tests"
     }
+  },
+  "scripts": {
+    "test": "vendor/bin/phpunit"
   },
   "extra": {
     "branch-alias": {

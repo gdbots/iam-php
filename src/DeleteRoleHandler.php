@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Gdbots\Iam;
 
@@ -11,7 +11,7 @@ use Gdbots\Schemas\Iam\Mixin\DeleteRole\DeleteRole;
 use Gdbots\Schemas\Iam\Mixin\RoleDeleted\RoleDeletedV1Mixin;
 use Gdbots\Schemas\Pbjx\StreamId;
 
-class DeleteRoleHandler implements CommandHandler
+final class DeleteRoleHandler implements CommandHandler
 {
     use CommandHandlerTrait;
 

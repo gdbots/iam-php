@@ -1,7 +1,7 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
-namespace Gdbots\Tests\Iam\TestUtils;
+namespace Gdbots\Tests\Iam;
 
 use Gdbots\Ncr\NcrSearch;
 use Gdbots\Pbj\SchemaQName;
@@ -9,7 +9,7 @@ use Gdbots\QueryParser\ParsedQuery;
 use Gdbots\Schemas\Ncr\Mixin\SearchNodesRequest\SearchNodesRequest;
 use Gdbots\Schemas\Ncr\Mixin\SearchNodesResponse\SearchNodesResponse;
 
-class DummyNcrSearch implements NcrSearch
+class MockNcrSearch implements NcrSearch
 {
     public function createStorage(SchemaQName $qname, array $context = []): void
     {

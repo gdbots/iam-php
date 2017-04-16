@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Gdbots\Tests\Iam;
 
@@ -23,7 +23,7 @@ class CreateUserHandlerTest extends AbstractPbjxTest
             ->set('email', 'homer@simpson.com')
             ->set('is_staff', true)
             ->addToMap('networks', 'twitter', 'homer')
-            ->addToSet('roles', [NodeRef::fromString('gdbots:role:polly-shouldnt-be')]);
+            ->addToSet('roles', [NodeRef::fromString('acme:role:polly-shouldnt-be')]);
 
         $command->set('node', $node);
         $expectedEvent = UserCreatedV1::create();
@@ -32,7 +32,7 @@ class CreateUserHandlerTest extends AbstractPbjxTest
         $handler = new CreateUserHandler();
         $handler->handleCommand($command, $this->pbjx);
 
-        $this->eventStore->pipeAllEvents(function(Event $event, StreamId $streamId) use ($expectedEvent, $expectedId) {
+        $this->eventStore->pipeAllEvents(function (Event $event, StreamId $streamId) use ($expectedEvent, $expectedId) {
             $this->assertSame($event::schema(), $expectedEvent::schema());
 
             $node = $event->get('node');
