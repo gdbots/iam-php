@@ -5,13 +5,11 @@
   "license": "Apache-2.0",
   "require": {
     "php": ">=7.1",
-    "gdbots/ncr": "dev-beta as 0.1.0",
-    "gdbots/pbjx": "dev-es as 1.0.0",
-    "gdbots/schemas": "dev-es as 1.0.0",
-    "psr/log": "~1"
+    "gdbots/ncr": "~0.1"
   },
   "require-dev": {
-    "phpunit/phpunit": "~4.3"
+    "phpunit/phpunit": "~6.0",
+    "gdbots/acme-schemas": "dev-master"
   },
   "autoload": {
     "psr-4": {
@@ -22,6 +20,9 @@
     "psr-4": {
       "Gdbots\\Tests\\Iam\\": "tests"
     }
+  },
+  "scripts": {
+    "test": "vendor/bin/phpunit"
   },
   "extra": {
     "branch-alias": {

@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Gdbots\Tests\Iam;
 
@@ -7,8 +7,9 @@ use Gdbots\Ncr\Repository\InMemoryNcr;
 use Gdbots\Pbjx\EventStore\InMemoryEventStore;
 use Gdbots\Pbjx\Pbjx;
 use Gdbots\Pbjx\RegisteringServiceLocator;
+use PHPUnit\Framework\TestCase;
 
-abstract class AbstractPbjxTest extends \PHPUnit_Framework_TestCase
+abstract class AbstractPbjxTest extends TestCase
 {
     /** @var RegisteringServiceLocator */
     protected $locator;

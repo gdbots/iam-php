@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Gdbots\Iam;
 
@@ -25,11 +25,7 @@ final class GrantRolesToUserHandler implements CommandHandler
         $event = $event->set('node_ref', $command->get('node_ref'));
         $pbjx->copyContext($command, $event);
 
-        $event->addToSet('roles', array_filter(
-            array_map(function ($role) {
-                return strtoupper(trim($role));
-            }, $command->get('roles', []))
-        ));
+        $event->addToSet('roles', $command->get('roles', []));
 
         $streamId = StreamId::fromString(sprintf('user.history:%s', $event->get('node_ref')->getId()));
         $pbjx->getEventStore()->putEvents($streamId, [$event]);
