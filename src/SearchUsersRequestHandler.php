@@ -1,12 +1,11 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Gdbots\Iam;
 
 use Gdbots\Ncr\NcrSearch;
 use Gdbots\Pbj\MessageResolver;
 use Gdbots\Pbj\SchemaQName;
-use Gdbots\Pbjx\Pbjx;
 use Gdbots\Pbjx\RequestHandler;
 use Gdbots\Pbjx\RequestHandlerTrait;
 use Gdbots\QueryParser\Enum\BoolOperator;
@@ -37,11 +36,10 @@ final class SearchUsersRequestHandler implements RequestHandler
 
     /**
      * @param SearchUsersRequest $request
-     * @param Pbjx               $pbjx
      *
      * @return SearchUsersResponse
      */
-    protected function handle(SearchUsersRequest $request, Pbjx $pbjx): SearchUsersResponse
+    protected function handle(SearchUsersRequest $request): SearchUsersResponse
     {
         $schema = MessageResolver::findOneUsingMixin(SearchUsersResponseV1Mixin::create(), 'iam', 'request');
         /** @var SearchUsersResponse $response */
@@ -55,24 +53,16 @@ final class SearchUsersRequestHandler implements RequestHandler
             $parsedQuery->addNode(new Field('status', new Word(NodeStatus::DELETED, $prohibited), $prohibited));
         }
 
-        if (Trinary::UNKNOWN !== $request->get('is_staff')) {
-            $parsedQuery->addNode(
-                new Field(
-                    'is_staff',
-                    new Word(Trinary::TRUE_VAL === $request->get('is_staff') ? 'true' : 'false', $required),
-                    $required
-                )
-            );
-        }
-
-        if (Trinary::UNKNOWN !== $request->get('is_blocked')) {
-            $parsedQuery->addNode(
-                new Field(
-                    'is_blocked',
-                    new Word(Trinary::TRUE_VAL === $request->get('is_blocked') ? 'true' : 'false', $required),
-                    $required
-                )
-            );
+        foreach (['is_staff', 'is_blocked'] as $trinary) {
+            if (Trinary::UNKNOWN !== $request->get($trinary)) {
+                $parsedQuery->addNode(
+                    new Field(
+                        $trinary,
+                        new Word(Trinary::TRUE_VAL === $request->get($trinary) ? 'true' : 'false', $required),
+                        $required
+                    )
+                );
+            }
         }
 
         /** @var SearchNodesRequest $request */

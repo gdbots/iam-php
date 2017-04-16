@@ -1,8 +1,9 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Gdbots\Iam\Validator;
 
+use Gdbots\Iam\Exception\UserAlreadyExists;
 use Gdbots\Pbj\Assertion;
 use Gdbots\Pbj\MessageResolver;
 use Gdbots\Pbj\WellKnown\Identifier;
@@ -16,7 +17,6 @@ use Gdbots\Schemas\Iam\Mixin\User\UserV1Mixin;
 use Gdbots\Schemas\Pbjx\Enum\Code;
 use Gdbots\Schemas\Pbjx\Mixin\Request\Request;
 use Gdbots\Schemas\Pbjx\StreamId;
-use Gdbots\Iam\Exception\UserAlreadyExists;
 
 final class UniqueUserValidator implements EventSubscriber
 {
@@ -80,7 +80,7 @@ final class UniqueUserValidator implements EventSubscriber
      * @throws UserAlreadyExists
      * @throws \Exception
      */
-    protected function ensureEmailIsAvailable(PbjxEvent $pbjxEvent, string $email, ?Identifier $currentUserId = null): void
+    private function ensureEmailIsAvailable(PbjxEvent $pbjxEvent, string $email, ?Identifier $currentUserId = null): void
     {
         $pbjx = $pbjxEvent::getPbjx();
         $message = $pbjxEvent->getMessage();
@@ -126,7 +126,7 @@ final class UniqueUserValidator implements EventSubscriber
      *
      * @throws UserAlreadyExists
      */
-    protected function ensureIdDoesNotExist(PbjxEvent $pbjxEvent, Identifier $userId): void
+    private function ensureIdDoesNotExist(PbjxEvent $pbjxEvent, Identifier $userId): void
     {
         $pbjx = $pbjxEvent::getPbjx();
         $message = $pbjxEvent->getMessage();

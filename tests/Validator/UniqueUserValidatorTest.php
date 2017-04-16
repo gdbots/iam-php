@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Gdbots\Tests\Iam\Validator;
 
@@ -27,7 +27,7 @@ class UniqueUserValidatorTest extends AbstractPbjxTest
         );
     }
 
-    public function testValidateCreateUserThatDoesNotExist()
+    public function testValidateCreateUserThatDoesNotExist(): void
     {
         $command = CreateUserV1::create();
         $node = UserV1::fromArray(['_id' => '7afcc2f1-9654-46d1-8fc1-b0511df257db', 'email' => 'homer@simpson.com']);
@@ -36,12 +36,15 @@ class UniqueUserValidatorTest extends AbstractPbjxTest
         $validator = new UniqueUserValidator();
         $pbjxEvent = new PbjxEvent($command);
         $validator->validateCreateUser($pbjxEvent);
+
+        // if it gets here it's a pass
+        $this->assertTrue(true);
     }
 
     /**
      * @expectedException \Gdbots\Iam\Exception\UserAlreadyExists
      */
-    public function testValidateCreateUserThatDoesExistByEmail()
+    public function testValidateCreateUserThatDoesExistByEmail(): void
     {
         $command = CreateUserV1::create();
         $existingNode = UserV1::fromArray(['_id' => '7afcc2f1-9654-46d1-8fc1-b0511df257db', 'email' => 'homer@simpson.com']);
@@ -57,7 +60,7 @@ class UniqueUserValidatorTest extends AbstractPbjxTest
     /**
      * @expectedException \Gdbots\Iam\Exception\UserAlreadyExists
      */
-    public function testValidateCreateUserThatDoesExistById()
+    public function testValidateCreateUserThatDoesExistById(): void
     {
         $command = CreateUserV1::create();
         $event = UserCreatedV1::create();

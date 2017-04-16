@@ -7,21 +7,21 @@ use Gdbots\Pbj\MessageResolver;
 use Gdbots\Pbjx\Pbjx;
 use Gdbots\Pbjx\RequestHandler;
 use Gdbots\Pbjx\RequestHandlerTrait;
-use Gdbots\Schemas\Iam\Mixin\GetUserHistoryRequest\GetUserHistoryRequest;
-use Gdbots\Schemas\Iam\Mixin\GetUserHistoryResponse\GetUserHistoryResponse;
-use Gdbots\Schemas\Iam\Mixin\GetUserHistoryResponse\GetUserHistoryResponseV1Mixin;
+use Gdbots\Schemas\Iam\Mixin\GetRoleHistoryRequest\GetRoleHistoryRequest;
+use Gdbots\Schemas\Iam\Mixin\GetRoleHistoryResponse\GetRoleHistoryResponse;
+use Gdbots\Schemas\Iam\Mixin\GetRoleHistoryResponse\GetRoleHistoryResponseV1Mixin;
 
-final class GetUserHistoryRequestHandler implements RequestHandler
+final class GetRoleHistoryRequestHandler implements RequestHandler
 {
     use RequestHandlerTrait;
 
     /**
-     * @param GetUserHistoryRequest $request
+     * @param GetRoleHistoryRequest $request
      * @param Pbjx                  $pbjx
      *
-     * @return GetUserHistoryResponse
+     * @return GetRoleHistoryResponse
      */
-    protected function handle(GetUserHistoryRequest $request, Pbjx $pbjx): GetUserHistoryResponse
+    protected function handle(GetRoleHistoryRequest $request, Pbjx $pbjx): GetRoleHistoryResponse
     {
         $slice = $pbjx->getEventStore()->getStreamSlice(
             $request->get('stream_id'),
@@ -30,8 +30,8 @@ final class GetUserHistoryRequestHandler implements RequestHandler
             $request->get('forward')
         );
 
-        $schema = MessageResolver::findOneUsingMixin(GetUserHistoryResponseV1Mixin::create(), 'iam', 'request');
-        /** @var GetUserHistoryResponse $response */
+        $schema = MessageResolver::findOneUsingMixin(GetRoleHistoryResponseV1Mixin::create(), 'iam', 'request');
+        /** @var GetRoleHistoryResponse $response */
         $response = $schema->createMessage();
 
         return $response

@@ -6,12 +6,12 @@ namespace Gdbots\Iam\Exception;
 use Gdbots\Pbj\Exception\HasEndUserMessage;
 use Gdbots\Schemas\Pbjx\Enum\Code;
 
-final class UserAlreadyExists extends \RuntimeException implements GdbotsIamException, HasEndUserMessage
+final class RoleAlreadyExists extends \RuntimeException implements GdbotsIamException, HasEndUserMessage
 {
     /**
      * @param string $message
      */
-    public function __construct(string $message = 'User already exists.')
+    public function __construct(string $message = 'Role already exists.')
     {
         parent::__construct($message, Code::ALREADY_EXISTS);
     }
