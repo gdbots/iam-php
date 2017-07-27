@@ -23,8 +23,8 @@ final class Policy implements \JsonSerializable
     {
         foreach ($roles as $role) {
             $this->roles[] = (string)$role->get('_id');
-            $this->allowed = array_merge($this->allowed, $role->get('allowed'));
-            $this->denied = array_merge($this->denied, $role->get('denied'));
+            $this->allowed = array_merge($this->allowed, $role->get('allowed', []));
+            $this->denied = array_merge($this->denied, $role->get('denied', []));
         }
     }
 
