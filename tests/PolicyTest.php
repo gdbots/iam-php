@@ -24,7 +24,14 @@ class PolicyTest extends TestCase
     {
         $policy = new Policy($roles);
 
-        echo json_encode($policy, JSON_PRETTY_PRINT).PHP_EOL;
+        echo PHP_EOL . 'allowed: ';
+        print_r($policy->allowed);
+        echo PHP_EOL . 'denied: ';
+        print_r($policy->denied);
+        echo PHP_EOL . 'action ' . $action . PHP_EOL;
+        print_r($policy->createPermissionSet());
+        echo PHP_EOL . 'Result Value: ';
+        print_r($policy->isGranted($action));
         $this->assertEquals($expected, $policy->isGranted($action), "Test policy [{$name}] failed.");
     }
 
@@ -40,9 +47,9 @@ class PolicyTest extends TestCase
                 'roles'    => [
                     RoleV1::create()
                         ->set('_id', RoleId::fromString('test1'))
-                        ->addToSet('allowed', ['acme:article:command:create-article']),
+                        ->addToSet('allowed', ['acme:article:command:create-article', 'acme:article:command:edit-article'])
                 ],
-                'expected' => true,
+                'expected' => 1,
             ],
 
             [
@@ -51,10 +58,10 @@ class PolicyTest extends TestCase
                 'roles'    => [
                     RoleV1::create()
                         ->set('_id', RoleId::fromString('test1'))
-                        ->addToSet('allowed', ['acme:article:command:create-article'])
+                        ->addToSet('allowed', ['acme:article:command:create-article', 'acme:article:command:edit-article'])
                         ->addToSet('denied', ['acme:article:command:create-article']),
                 ],
-                'expected' => false,
+                'expected' => 0,
             ],
 
             [

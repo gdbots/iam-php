@@ -11,10 +11,10 @@ final class Policy implements \JsonSerializable
     private $roles = [];
 
     /** @var string[] */
-    private $allowed = [];
+    public $allowed = [];
 
     /** @var string[] */
-    private $denied = [];
+    public $denied = [];
 
     /**
      * @param Role[] $roles
@@ -35,7 +35,85 @@ final class Policy implements \JsonSerializable
      */
     public function isGranted(string $action): bool
     {
-        return false;
+        if (empty($this->allowed)) {
+            return false;
+        }
+        elseif (isset($action, $this->denied)) {
+            return false;
+        }
+        elseif (isset($action, $this->allowed)) {
+            return true;
+        }
+        else {
+            return $this->hasPermission($action);
+        }
+    }
+
+    /**
+     * @return array
+     */
+    public function createPermissionSet()
+    {
+        $separator = ':';
+        $nestedArray = [];
+
+        // Convert all the allowed rules into a nested array
+        foreach ($this->allowed as $str) {
+            $array = &$nestedArray;
+            $levels = explode($separator, $str);
+
+            for ($i = 0; $i < count($levels); $i++) {
+                if (!isset($array[$levels[$i]])) {
+                    $array[$levels[$i]] = [];
+                }
+
+                if ($levels[$i] == '*') {
+                    $array = true;
+                }
+                else {
+                    $array = &$array[$levels[$i]];
+                }
+            }
+            $array = true;
+        }
+
+        // Stripping out items in the array based on deny rules
+        foreach ($this->denied as $str) {
+            $array = &$nestedArray;
+            $levels = explode($separator, $str);
+
+            for ($i = 0; $i < count($levels); $i++) {
+                if (!$array[$levels[$i]] != 1 && !isset($array[$levels[$i]])) {
+                    $array[$levels[$i]] = [];
+                }
+                elseif ($array[$levels[$i]] == 1) {
+                    unset($array[$levels[$i]]);
+                }
+                if ($levels[$i] == '*') {
+                    $array = false;
+                }
+                else {
+                    $array = &$array[$levels[$i]];
+                }
+            }
+            $array = false;
+        }
+        return $nestedArray;
+    }
+
+    public function hasPermission(string $action)
+    {
+        $separator = ':';
+        $actionParts = explode($separator, $action);
+        $permissionSet = $this->createPermissionSet();
+
+        foreach ($actionParts as $segment) {
+            $permissionSet = $permissionSet[$segment];
+            if ($permissionSet === '1' || !$permissionSet)
+                return $permissionSet;
+        }
+
+        return $permissionSet;
     }
 
     /**
