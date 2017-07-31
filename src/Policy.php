@@ -38,10 +38,10 @@ final class Policy implements \JsonSerializable
         if (empty($this->allowed)) {
             return false;
         }
-        elseif (isset($action, $this->denied)) {
+        elseif (in_array($action, $this->denied)) {
             return false;
         }
-        elseif (isset($action, $this->allowed)) {
+        elseif (in_array($action, $this->allowed)) {
             return true;
         }
         else {
@@ -50,9 +50,36 @@ final class Policy implements \JsonSerializable
     }
 
     /**
+     * @param string $action
+     *
+     * @return bool
+     */
+    public function hasPermission(string $action): bool
+    {
+        $separator = ':';
+        $actionParts = explode($separator, $action);
+        $permissionSet = $this->createPermissionSet();
+
+        // iterate through all the levels of nested array
+        foreach ($actionParts as $segment) {
+            if (isset($permissionSet[$segment])) {
+                $permissionSet = $permissionSet[$segment];
+            }
+            else {
+                return false;
+            }
+
+            if ($permissionSet == 1)
+                return true;
+        }
+
+        return false;
+    }
+
+    /**
      * @return array
      */
-    public function createPermissionSet()
+    public function createPermissionSet(): array
     {
         $separator = ':';
         $nestedArray = [];
@@ -67,10 +94,12 @@ final class Policy implements \JsonSerializable
                     $array[$levels[$i]] = [];
                 }
 
+                // set to true when wildcard is hit
                 if ($levels[$i] == '*') {
                     $array = true;
                 }
                 else {
+                    // assign the associative array back to $array
                     $array = &$array[$levels[$i]];
                 }
             }
@@ -83,12 +112,14 @@ final class Policy implements \JsonSerializable
             $levels = explode($separator, $str);
 
             for ($i = 0; $i < count($levels); $i++) {
-                if (!$array[$levels[$i]] != 1 && !isset($array[$levels[$i]])) {
+                if ($levels[$i] != '*' && !isset($array[$levels[$i]])) {
                     $array[$levels[$i]] = [];
                 }
-                elseif ($array[$levels[$i]] == 1) {
+                elseif ($levels[$i] != '*' && isset($array[$levels[$i]])) {
                     unset($array[$levels[$i]]);
                 }
+
+                // set to false when wildcard is hit
                 if ($levels[$i] == '*') {
                     $array = false;
                 }
@@ -98,22 +129,8 @@ final class Policy implements \JsonSerializable
             }
             $array = false;
         }
+
         return $nestedArray;
-    }
-
-    public function hasPermission(string $action)
-    {
-        $separator = ':';
-        $actionParts = explode($separator, $action);
-        $permissionSet = $this->createPermissionSet();
-
-        foreach ($actionParts as $segment) {
-            $permissionSet = $permissionSet[$segment];
-            if ($permissionSet === '1' || !$permissionSet)
-                return $permissionSet;
-        }
-
-        return $permissionSet;
     }
 
     /**
