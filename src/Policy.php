@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace Gdbots\Iam;
 
 use Gdbots\Schemas\Iam\Mixin\Role\Role;
+use Gdbots\Schemas\Iam\Mixin\Role\RoleV1;
+use Gdbots\Schemas\Iam\RoleId;
 
 final class Policy implements \JsonSerializable
 {
@@ -16,6 +18,25 @@ final class Policy implements \JsonSerializable
     /** @var string[] */
     private $denied = [];
 
+    /** @var string[] */
+    private $allowedSet = [];
+
+    /** @var string[] */
+    private $deniedSet = [];
+
+    /** @var mixed[] */
+    private $roleSet = [];
+
+    /**
+     * delimiter used for action
+     */
+    const DELIMITER = ':';
+
+    /**
+     * wildcard symbol used in allowed, denied rules
+     */
+    const WILDCARD = '*';
+
     /**
      * @param Role[] $roles
      */
@@ -26,6 +47,24 @@ final class Policy implements \JsonSerializable
             $this->allowed = array_merge($this->allowed, $role->get('allowed', []));
             $this->denied = array_merge($this->denied, $role->get('denied', []));
         }
+
+        $this->roleSet = array_flip($this->roles);
+        $this->allowedSet = array_flip($this->allowed);
+        $this->deniedSet = array_flip($this->denied);
+    }
+
+    /**
+     * @param string $role
+     *
+     * @return bool
+     */
+    public function hasRoles(string $role): bool
+    {
+        if (isset($this->roleSet[$role])) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -35,68 +74,59 @@ final class Policy implements \JsonSerializable
      */
     public function isGranted(string $action): bool
     {
-        $allowedSet = array_flip($this->allowed);
-        $deniedSet = array_flip($this->denied);
-        $wildCard = '*';
-
-        if (empty($allowedSet)) {
+        if (empty($this->allowedSet)) {
             return false;
         }
-        elseif (isset($deniedSet[$action]) || isset($deniedSet[$wildCard])) {
+
+        if (isset($this->deniedSet[$action]) || isset($this->deniedSet[self::WILDCARD])) {
             return false;
         }
-        elseif (isset($allowedSet[$action])) {
-            return true;
-        }
-        else {
-            return $this->hasPermission($action, $allowedSet, $deniedSet);
-        }
-    }
 
-    /**
-     * @param string $action
-     * @param array $allowedSet
-     * @param array $deniedSet
-     *
-     * @return bool
-     */
-    public function hasPermission(string $action, array $allowedSet = [], array $deniedSet = []): bool
-    {
-        $separator = ':';
-        $wildCard = '*';
-        $actionParts = explode($separator, $action);
-        $level = '';
-        $actionLevels = [];
+        $actionLevels = $this->getActionLevels($action);
 
-        // iterate through all the levels of nested array
-        foreach ($actionParts as $key => $segment) {
-            if ($key < count($actionParts) - 1) {
-                $level .= $segment . ':';
-                $rule = $level . $wildCard;
-
-                if (isset($deniedSet[$rule])) {
-                    return false;
-                }
-                else {
-                    // create array with all possible permission levels
-                    array_push($actionLevels, $rule);
-                }
+        // check if a combination exists in $this->deniedSet
+        foreach ($actionLevels as $rule) {
+            if (isset($this->deniedSet[$rule])) {
+                return false;
             }
         }
 
-        // true if $allowedSet has wildcard in it
-        if (isset($wildCard, $allowedSet)) {
-            return true;
-        }
-
-        // check if any of the permission level set exists in $allowedSet
+        // check if a combination exists in $this->allowedSet
         foreach ($actionLevels as $rule) {
-            if (isset($allowedSet[$rule])) {
+            if (isset($this->allowedSet[$rule])) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * @param string $action
+     *
+     * @return array
+     */
+    public function getActionLevels(string $action): array
+    {
+        $actionLevels = [self::WILDCARD];
+        $level = '';
+        $actionParts = explode(self::DELIMITER, $action);
+
+        // push all possible match combinations to an array
+        foreach ($actionParts as $key => $segment) {
+            if ($key < count($actionParts) - 1) {
+                $level .= $segment . ':';
+                $rule = $level . self::WILDCARD;
+
+                // create array with all possible permission levels
+                array_push($actionLevels, $rule);
+            }
+        }
+
+        // pushing the action itself
+        array_push($actionLevels, $action);
+
+        return $actionLevels;
     }
 
     /**

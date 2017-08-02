@@ -121,10 +121,65 @@ class PolicyTest extends TestCase
                     RoleV1::create()
                         ->set('_id', RoleId::fromString('test1'))
                         ->addToSet('allowed', ['*'])
-                        ->addToSet('denied', ['acme:article:*'])
+                        ->addToSet('denied', ['acme:article:*']),
                 ],
                 'expected'  => false,
             ],
+
+            [
+                'name'      => 'action allowed with deny on command level',
+                'action'    => 'acme:article:command:create-article',
+                'roles'     => [
+                    RoleV1::create()
+                        ->set('_id', RoleId::fromString('test1'))
+                        ->addToSet('allowed', ['acme:article:command:create-article'])
+                        ->addToSet('denied', ['acme:article:command:*']),
+                ],
+                'expected'  => false,
+            ]
         ];
     }
+
+    /**
+     * @dataProvider getRoleSamples
+     *
+     * @param string $name
+     * @param array $roles
+     * @param string $role
+     * @param bool $expected
+     */
+    public function testHasRoles(string $name, array $roles = [], string $role, bool $expected)
+    {
+        $policy = new Policy($roles);
+        $this->assertEquals($expected, $policy->hasRoles($role), "Test policy [{$name}] failed");
+    }
+
+    /**
+     * @return array
+     */
+    public function getRoleSamples(): array
+    {
+        return [
+            [
+                'name'      => 'simple role exists',
+                'roles'     => [
+                    RoleV1::create()
+                        ->set('_id', RoleId::fromString('administrator'))
+                ],
+                'role'      => 'administrator',
+                'expected' => true,
+            ],
+
+            [
+                'name'      => 'simple role not exist',
+                'roles'     => [
+                    RoleV1::create()
+                        ->set('_id', RoleId::fromString('administrator'))
+                ],
+                'role'      => 'editor',
+                'expected' => false,
+            ]
+        ];
+    }
+
 }
