@@ -11,10 +11,10 @@ final class Policy implements \JsonSerializable
     private $roles = [];
 
     /** @var string[] */
-    public $allowed = [];
+    private $allowed = [];
 
     /** @var string[] */
-    public $denied = [];
+    private $denied = [];
 
     /**
      * @param Role[] $roles
@@ -35,102 +35,68 @@ final class Policy implements \JsonSerializable
      */
     public function isGranted(string $action): bool
     {
-        if (empty($this->allowed)) {
+        $allowedSet = array_flip($this->allowed);
+        $deniedSet = array_flip($this->denied);
+        $wildCard = '*';
+
+        if (empty($allowedSet)) {
             return false;
         }
-        elseif (in_array($action, $this->denied)) {
+        elseif (isset($deniedSet[$action]) || isset($deniedSet[$wildCard])) {
             return false;
         }
-        elseif (in_array($action, $this->allowed)) {
+        elseif (isset($allowedSet[$action])) {
             return true;
         }
         else {
-            return $this->hasPermission($action);
+            return $this->hasPermission($action, $allowedSet, $deniedSet);
         }
     }
 
     /**
      * @param string $action
+     * @param array $allowedSet
+     * @param array $deniedSet
      *
      * @return bool
      */
-    public function hasPermission(string $action): bool
+    public function hasPermission(string $action, array $allowedSet = [], array $deniedSet = []): bool
     {
         $separator = ':';
+        $wildCard = '*';
         $actionParts = explode($separator, $action);
-        $permissionSet = $this->createPermissionSet();
+        $level = '';
+        $actionLevels = [];
 
         // iterate through all the levels of nested array
-        foreach ($actionParts as $segment) {
-            if (isset($permissionSet[$segment])) {
-                $permissionSet = $permissionSet[$segment];
-            }
-            else {
-                return false;
-            }
+        foreach ($actionParts as $key => $segment) {
+            if ($key < count($actionParts) - 1) {
+                $level .= $segment . ':';
+                $rule = $level . $wildCard;
 
-            if ($permissionSet == 1)
+                if (isset($deniedSet[$rule])) {
+                    return false;
+                }
+                else {
+                    // create array with all possible permission levels
+                    array_push($actionLevels, $rule);
+                }
+            }
+        }
+
+        // true if $allowedSet has wildcard in it
+        if (isset($wildCard, $allowedSet)) {
+            return true;
+        }
+
+        // check if any of the permission level set exists in $allowedSet
+        foreach ($actionLevels as $rule) {
+            if (isset($allowedSet[$rule])) {
                 return true;
+            }
         }
 
         return false;
-    }
-
-    /**
-     * @return array
-     */
-    public function createPermissionSet(): array
-    {
-        $separator = ':';
-        $nestedArray = [];
-
-        // Convert all the allowed rules into a nested array
-        foreach ($this->allowed as $str) {
-            $array = &$nestedArray;
-            $levels = explode($separator, $str);
-
-            for ($i = 0; $i < count($levels); $i++) {
-                if (!isset($array[$levels[$i]])) {
-                    $array[$levels[$i]] = [];
-                }
-
-                // set to true when wildcard is hit
-                if ($levels[$i] == '*') {
-                    $array = true;
-                }
-                else {
-                    // assign the associative array back to $array
-                    $array = &$array[$levels[$i]];
-                }
-            }
-            $array = true;
-        }
-
-        // Stripping out items in the array based on deny rules
-        foreach ($this->denied as $str) {
-            $array = &$nestedArray;
-            $levels = explode($separator, $str);
-
-            for ($i = 0; $i < count($levels); $i++) {
-                if ($levels[$i] != '*' && !isset($array[$levels[$i]])) {
-                    $array[$levels[$i]] = [];
-                }
-                elseif ($levels[$i] != '*' && isset($array[$levels[$i]])) {
-                    unset($array[$levels[$i]]);
-                }
-
-                // set to false when wildcard is hit
-                if ($levels[$i] == '*') {
-                    $array = false;
-                }
-                else {
-                    $array = &$array[$levels[$i]];
-                }
-            }
-            $array = false;
-        }
-
-        return $nestedArray;
     }
 
     /**

@@ -20,18 +20,10 @@ class PolicyTest extends TestCase
      * @param Role[] $roles
      * @param bool   $expected
      */
-    public function testIsGranted(string $name, string $action, array $roles, bool $expected)
+    public function testIsGranted(string $name, string $action, array $roles = [], bool $expected)
     {
         $policy = new Policy($roles);
-
-        echo PHP_EOL . 'allowed: ';
-        print_r($policy->allowed);
-        echo PHP_EOL . 'denied: ';
-        print_r($policy->denied);
-        echo PHP_EOL . 'action ' . $action . PHP_EOL;
-        echo 'Permission set ' . PHP_EOL;
-        print_r($policy->createPermissionSet());
-        echo PHP_EOL . 'Result for the test set below ';
+        echo PHP_EOL . 'action - ' . $action . PHP_EOL;
         $this->assertEquals($expected, $policy->isGranted($action), "Test policy [{$name}] failed.");
     }
 
@@ -107,8 +99,32 @@ class PolicyTest extends TestCase
                         ->addToSet('allowed', ['acme:article:*', 'acme:blog:*'])
                         ->addToSet('denied', ['acme:article:command:create-article',  'acme:article:command:edit-article']),
                 ],
-                'expected' => false,
-            ]
+                'expected' => true,
+            ],
+
+            [
+                'name'      => 'top level wildcard allowed',
+                'action'    => 'acme:article:create-article',
+                'roles'     => [
+                    RoleV1::create()
+                        ->set('_id', RoleId::fromString('test1'))
+                        ->addToSet('allowed', ['*'])
+                        ->addToSet('denied', []),
+                ],
+                'expected'  => true,
+            ],
+
+            [
+                'name'      => 'top level wildcard allowed with deny on package level',
+                'action'    => 'acme:article:request:get-userid',
+                'roles'     => [
+                    RoleV1::create()
+                        ->set('_id', RoleId::fromString('test1'))
+                        ->addToSet('allowed', ['*'])
+                        ->addToSet('denied', ['acme:article:*'])
+                ],
+                'expected'  => false,
+            ],
         ];
     }
 }
