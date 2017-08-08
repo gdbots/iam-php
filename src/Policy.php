@@ -4,12 +4,11 @@ declare(strict_types=1);
 namespace Gdbots\Iam;
 
 use Gdbots\Schemas\Iam\Mixin\Role\Role;
-use Gdbots\Schemas\Iam\Mixin\Role\RoleV1;
 use Gdbots\Schemas\Iam\RoleId;
 
 final class Policy implements \JsonSerializable
 {
-    /** @var string[] */
+    /** @var Role[] */
     private $roles = [];
 
     /** @var string[] */
@@ -18,24 +17,11 @@ final class Policy implements \JsonSerializable
     /** @var string[] */
     private $denied = [];
 
-    /** @var string[] */
-    private $allowedSet = [];
+    /** delimiter used for action */
+    private const DELIMITER = ':';
 
-    /** @var string[] */
-    private $deniedSet = [];
-
-    /** @var mixed[] */
-    private $roleSet = [];
-
-    /**
-     * delimiter used for action
-     */
-    const DELIMITER = ':';
-
-    /**
-     * wildcard symbol used in allowed, denied rules
-     */
-    const WILDCARD = '*';
+    /** wildcard symbol used in allowed, denied rules */
+    private const WILDCARD = '*';
 
     /**
      * @param Role[] $roles
@@ -43,57 +29,55 @@ final class Policy implements \JsonSerializable
     public function __construct(array $roles = [])
     {
         foreach ($roles as $role) {
-            $this->roles[] = (string)$role->get('_id');
+            $this->roles[(string)$role->get('_id')] = $role;
             $this->allowed = array_merge($this->allowed, $role->get('allowed', []));
             $this->denied = array_merge($this->denied, $role->get('denied', []));
         }
 
-        $this->roleSet = array_flip($this->roles);
-        $this->allowedSet = array_flip($this->allowed);
-        $this->deniedSet = array_flip($this->denied);
+        $this->allowed = array_flip($this->allowed);
+        $this->denied = array_flip($this->denied);
     }
 
     /**
-     * @param string $role
+     * Returns true if the policy include the provided role.
+     *
+     * @param RoleId $id
      *
      * @return bool
      */
-    public function hasRoles(string $role): bool
+    public function hasRole(RoleId $id): bool
     {
-        if (isset($this->roleSet[$role])) {
-            return true;
-        }
-
-        return false;
+        return isset($this->roles[$id->toString()]);
     }
 
     /**
+     * Returns true if the policy should allow the action
+     * to be carried out.
+     *
      * @param string $action
      *
      * @return bool
      */
     public function isGranted(string $action): bool
     {
-        if (empty($this->allowedSet)) {
+        if (empty($this->allowed)) {
             return false;
         }
 
-        if (isset($this->deniedSet[$action]) || isset($this->deniedSet[self::WILDCARD])) {
+        if (isset($this->denied[$action]) || isset($this->denied[self::WILDCARD])) {
             return false;
         }
 
-        $actionLevels = $this->getActionLevels($action);
+        $rules = $this->getRules($action);
 
-        // check if a combination exists in $this->deniedSet
-        foreach ($actionLevels as $rule) {
-            if (isset($this->deniedSet[$rule])) {
+        foreach ($rules as $rule) {
+            if (isset($this->denied[$rule])) {
                 return false;
             }
         }
 
-        // check if a combination exists in $this->allowedSet
-        foreach ($actionLevels as $rule) {
-            if (isset($this->allowedSet[$rule])) {
+        foreach ($rules as $rule) {
+            if (isset($this->allowed[$rule])) {
                 return true;
             }
         }
@@ -102,42 +86,57 @@ final class Policy implements \JsonSerializable
     }
 
     /**
-     * @param string $action
-     *
-     * @return array
-     */
-    public function getActionLevels(string $action): array
-    {
-        $actionLevels = [self::WILDCARD];
-        $level = '';
-        $actionParts = explode(self::DELIMITER, $action);
-
-        // push all possible match combinations to an array
-        foreach ($actionParts as $key => $segment) {
-            if ($key < count($actionParts) - 1) {
-                $level .= $segment . ':';
-                $rule = $level . self::WILDCARD;
-
-                // create array with all possible permission levels
-                array_push($actionLevels, $rule);
-            }
-        }
-
-        // pushing the action itself
-        array_push($actionLevels, $action);
-
-        return $actionLevels;
-    }
-
-    /**
      * @return array
      */
     public function jsonSerialize()
     {
         return [
-            'roles'   => $this->roles,
-            'allowed' => $this->allowed,
-            'denied'  => $this->denied,
+            'roles'   => array_keys($this->roles),
+            'allowed' => array_keys($this->allowed),
+            'denied'  => array_keys($this->denied),
         ];
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString()
+    {
+        return json_encode($this);
+    }
+
+    /**
+     * Converts an action with potentially colon delimiters
+     * into a set of permissions to check for.
+     *
+     * @example
+     * An action of "acme:blog:command:publish-article" becomes
+     * an array of:
+     * [
+     *   '*',
+     *   'acme:*',
+     *   'acme:blog:*',
+     *   'acme:blog:command:*',
+     *   'acme:blog:command:publish-article',
+     * ]
+     *
+     * @param string $action
+     *
+     * @return string[]
+     */
+    private function getRules(string $action): array
+    {
+        $rules = [];
+        $parts = explode(self::DELIMITER, $action);
+
+        while (array_pop($parts)) {
+            $rules[] = implode(self::DELIMITER, $parts) . self::DELIMITER . self::WILDCARD;
+        }
+
+        $rules = array_reverse($rules);
+        $rules[0] = trim($rules[0], self::DELIMITER);
+        $rules[] = $action;
+
+        return $rules;
     }
 }
