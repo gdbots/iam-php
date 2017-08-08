@@ -4,10 +4,11 @@ declare(strict_types=1);
 namespace Gdbots\Iam;
 
 use Gdbots\Schemas\Iam\Mixin\Role\Role;
+use Gdbots\Schemas\Iam\RoleId;
 
 final class Policy implements \JsonSerializable
 {
-    /** @var string[] */
+    /** @var Role[] */
     private $roles = [];
 
     /** @var string[] */
@@ -16,25 +17,71 @@ final class Policy implements \JsonSerializable
     /** @var string[] */
     private $denied = [];
 
+    /** delimiter used for action */
+    private const DELIMITER = ':';
+
+    /** wildcard symbol used in allowed, denied rules */
+    private const WILDCARD = '*';
+
     /**
      * @param Role[] $roles
      */
     public function __construct(array $roles = [])
     {
         foreach ($roles as $role) {
-            $this->roles[] = (string)$role->get('_id');
+            $this->roles[(string)$role->get('_id')] = $role;
             $this->allowed = array_merge($this->allowed, $role->get('allowed', []));
             $this->denied = array_merge($this->denied, $role->get('denied', []));
         }
+
+        $this->allowed = array_flip($this->allowed);
+        $this->denied = array_flip($this->denied);
     }
 
     /**
+     * Returns true if the policy include the provided role.
+     *
+     * @param RoleId $id
+     *
+     * @return bool
+     */
+    public function hasRole(RoleId $id): bool
+    {
+        return isset($this->roles[$id->toString()]);
+    }
+
+    /**
+     * Returns true if the policy should allow the action
+     * to be carried out.
+     *
      * @param string $action
      *
      * @return bool
      */
     public function isGranted(string $action): bool
     {
+        if (empty($this->allowed)) {
+            return false;
+        }
+
+        if (isset($this->denied[$action]) || isset($this->denied[self::WILDCARD])) {
+            return false;
+        }
+
+        $rules = $this->getRules($action);
+
+        foreach ($rules as $rule) {
+            if (isset($this->denied[$rule])) {
+                return false;
+            }
+        }
+
+        foreach ($rules as $rule) {
+            if (isset($this->allowed[$rule])) {
+                return true;
+            }
+        }
+
         return false;
     }
 
@@ -44,9 +91,52 @@ final class Policy implements \JsonSerializable
     public function jsonSerialize()
     {
         return [
-            'roles'   => $this->roles,
-            'allowed' => $this->allowed,
-            'denied'  => $this->denied,
+            'roles'   => array_keys($this->roles),
+            'allowed' => array_keys($this->allowed),
+            'denied'  => array_keys($this->denied),
         ];
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString()
+    {
+        return json_encode($this);
+    }
+
+    /**
+     * Converts an action with potentially colon delimiters
+     * into a set of permissions to check for.
+     *
+     * @example
+     * An action of "acme:blog:command:publish-article" becomes
+     * an array of:
+     * [
+     *   '*',
+     *   'acme:*',
+     *   'acme:blog:*',
+     *   'acme:blog:command:*',
+     *   'acme:blog:command:publish-article',
+     * ]
+     *
+     * @param string $action
+     *
+     * @return string[]
+     */
+    private function getRules(string $action): array
+    {
+        $rules = [];
+        $parts = explode(self::DELIMITER, $action);
+
+        while (array_pop($parts)) {
+            $rules[] = implode(self::DELIMITER, $parts) . self::DELIMITER . self::WILDCARD;
+        }
+
+        $rules = array_reverse($rules);
+        $rules[0] = trim($rules[0], self::DELIMITER);
+        $rules[] = $action;
+
+        return $rules;
     }
 }
