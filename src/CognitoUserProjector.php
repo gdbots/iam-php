@@ -7,8 +7,6 @@ use Aws\CognitoIdentityProvider\CognitoIdentityProviderClient;
 use Gdbots\Pbjx\EventSubscriberTrait;
 use Gdbots\Schemas\Iam\Mixin\UserCreated\UserCreated;
 use Gdbots\Schemas\Iam\Mixin\UserDeleted\UserDeleted;
-use Gdbots\Schemas\Iam\Mixin\UserRolesGranted\UserRolesGranted;
-use Gdbots\Schemas\Iam\Mixin\UserRolesRevoked\UserRolesRevoked;
 use Gdbots\Schemas\Iam\Mixin\UserUpdated\UserUpdated;
 
 class CognitoUserProjector
@@ -18,21 +16,23 @@ class CognitoUserProjector
     /** @var CognitoIdentityProviderClient */
     protected $client;
 
+    /** @var string $poolId */
+    protected $poolId;
+
+    /** @var CognitoIdentityProviderClient $cognitoIdentityProviderClient */
+    protected $cognitoIdentityProviderClient;
+
     /**
-     *
+     * @param CognitoIdentityProviderClient $cognitoIdentityProviderClient
      */
-    public function __construct()
+    public function __construct
+    (
+        CognitoIdentityProviderClient $cognitoIdentityProviderClient,
+        string $poolId
+    )
     {
-        $args = array(
-            'credentials' => [
-                'key' => '',
-                'secret' => ''
-            ],
-            'region' => 'us-east-2',
-            'version' => '2016-04-18'
-        );
-        $this->client = new CognitoIdentityProviderClient($args);
-        // make the aws client here
+        $this->client = $cognitoIdentityProviderClient;
+        $this->poolId = $poolId;
     }
 
     /**
@@ -40,7 +40,28 @@ class CognitoUserProjector
      */
     public function onUserCreated(UserCreated $event): void
     {
-        // stuff
+        $id = $event->get('node')->get('_id');
+        $schema = $event->get('node')->get('_schema');
+        // remove pbj: from start
+        $schema = str_replace('pbj:', '', $schema);
+        // remove version from end
+        $schema = preg_replace('/:[^:]+$/', '', $schema);
+        $username = $schema . ':' . $id;
+
+        $this->client->adminCreateUser([
+            'UserPoolId' => $this->poolId,
+            'Username' => $username,
+            'UserAttributes' => [
+                [
+                    'Name' => 'email',
+                    'Value' => $event->get('node')->get('email')
+                ],
+                [
+                    'Name' => 'custom:is_staff',
+                    'Value' => $event->get('node')->get('is_staff') ? '1' : '0'
+                ],
+            ],
+        ]);
     }
 
     /**
@@ -57,13 +78,9 @@ class CognitoUserProjector
                 [
                     'Name' => 'custom:is_blocked',
                     'Value' => $event->get('new_node')->get('is_blocked') ? '1' : '0'
-                ],
-                [
-                    'Name' => 'custom:test',
-                    'Value' => $event->get('node_ref')->toString()
                 ]
             ],
-            'UserPoolId' => 'us-east-2_mZNBwnzZW',
+            'UserPoolId' => $this->poolId,
             'Username' => 'tmz:iam:node:user:' . $event->get('node_ref')->getId()
         ]);
     }
@@ -73,22 +90,9 @@ class CognitoUserProjector
      */
     public function onUserDeleted(UserDeleted $event): void
     {
-        // stuff
-    }
-
-    /**
-     * @param UserRolesGranted $event
-     */
-    public function onUserRolesGranted(UserRolesGranted $event): void
-    {
-        // stuff
-    }
-
-    /**
-     * @param UserRolesRevoked $event
-     */
-    public function onUserRolesRevoked(UserRolesRevoked $event): void
-    {
-        // stuff
+        $this->client->adminDisableUser([
+            'UserPoolId' => $this->poolId,
+            'Username' => 'tmz:iam:node:user:' . $event->get('node_ref')->getId()
+        ]);
     }
 }
