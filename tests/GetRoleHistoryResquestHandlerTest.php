@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Gdbots\Iam;
 
@@ -22,7 +22,7 @@ class GetRoleHistoryResquestHandlerTest extends AbstractPbjxTest
         // test default
         $request = GetRoleHistoryRequestV1::fromArray([
             'stream_id' => 'role.history:1234',
-            'since' => Microtime::create()
+            'since'     => Microtime::create(),
         ]);
 
         $handler = new GetRoleHistoryRequestHandler();
@@ -45,8 +45,8 @@ class GetRoleHistoryResquestHandlerTest extends AbstractPbjxTest
         // test with count
         $request = GetRoleHistoryRequestV1::fromArray([
             'stream_id' => 'role.history:4321',
-            'since' => Microtime::create(),
-            'count' => 2
+            'since'     => Microtime::create(),
+            'count'     => 2,
         ]);
 
         $handler = new GetRoleHistoryRequestHandler();
@@ -68,7 +68,7 @@ class GetRoleHistoryResquestHandlerTest extends AbstractPbjxTest
         // test with forward
         $request = GetRoleHistoryRequestV1::fromArray([
             'stream_id' => 'role.history:0000',
-            'forward' => true
+            'forward'   => true,
         ]);
 
         $handler = new GetRoleHistoryRequestHandler();

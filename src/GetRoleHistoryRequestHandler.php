@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Gdbots\Iam;
 
-use Gdbots\Pbj\MessageResolver;
 use Gdbots\Pbjx\Pbjx;
 use Gdbots\Pbjx\RequestHandler;
 use Gdbots\Pbjx\RequestHandlerTrait;
@@ -30,7 +29,7 @@ final class GetRoleHistoryRequestHandler implements RequestHandler
             $request->get('forward')
         );
 
-        $schema = MessageResolver::findOneUsingMixin(GetRoleHistoryResponseV1Mixin::create(), 'iam', 'request');
+        $schema = GetRoleHistoryResponseV1Mixin::findOne();
         /** @var GetRoleHistoryResponse $response */
         $response = $schema->createMessage();
 

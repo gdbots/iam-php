@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Gdbots\Tests\Iam;
 
@@ -56,8 +56,10 @@ class GetUserBatchRequestHandlerTest extends AbstractPbjxTest
         $this->assertTrue($node2->equals($usersMap['acme:user:2b591594-10e2-11e7-93ae-92361f002671']));
         $this->assertContains('vendor:label:3bbb1694-10e2-15e7-93ae-92361f002672', $missingNodes);
     }
+
     /**
      * @param string $id
+     *
      * @return Node
      */
     public function createUsers(string $id = ''): Node

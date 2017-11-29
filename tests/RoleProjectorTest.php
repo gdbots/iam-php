@@ -39,7 +39,7 @@ class RoleProjectorTest extends AbstractPbjxTest
         $role = $this->createRoleById('super-user');
         $event = RoleCreatedV1::create()->set('node', $role);
 
-        $this->roleProjecter->onRoleCreated($event, $this->pbjx);
+        $this->roleProjecter->onRoleCreated($event);
         $getRole = $this->ncr->getNode(NodeRef::fromString('acme:role:super-user'));
 
         $this->assertTrue($role->equals($getRole));
@@ -54,10 +54,10 @@ class RoleProjectorTest extends AbstractPbjxTest
         $event = RoleCreatedV1::create()->set('node', $role);
         $event->isReplay(true);
 
-        $this->roleProjecter->onRoleCreated($event, $this->pbjx);
-        $getRole = $this->ncr->getNode(NodeRef::fromString('acme:role:super-user'));
+        $this->roleProjecter->onRoleCreated($event);
 
-        $this->assertTrue($role->equals($getRole));
+        $actualRole = $this->ncr->getNode(NodeRef::fromString('acme:role:super-user'));
+        $this->assertTrue($role->equals($actualRole));
     }
 
     /**
@@ -82,12 +82,10 @@ class RoleProjectorTest extends AbstractPbjxTest
             ->set('new_etag', $newRole->get('etag'))
             ->set('node_ref', $nodeRef);
 
-        $this->roleProjecter->onRoleUpdated($event, $this->pbjx);
-        $getRole = $this->ncr->getNode($nodeRef);
+        $this->roleProjecter->onRoleUpdated($event);
 
-        $this->assertSame($newRole->get('allowed'), $getRole->get('allowed'));
-        $this->assertSame($newRole->get('denied'), $getRole->get('denied'));
-        $this->assertSame($event->get('new_etag'), $getRole->get('etag'));
+        $actualRole = $this->ncr->getNode($nodeRef);
+        $this->assertTrue($newRole->equals($actualRole));
     }
 
     /**
@@ -97,11 +95,11 @@ class RoleProjectorTest extends AbstractPbjxTest
     {
         $role = $this->createRoleById('test-user');
         $nodeRef = NodeRef::fromNode($role);
-        $this->ncr->putNode($role, null);
+        $this->ncr->putNode($role);
 
         $event = RoleDeletedV1::create()->set('node_ref', $nodeRef);
 
-        $this->roleProjecter->onRoleDeleted($event, $this->pbjx);
+        $this->roleProjecter->onRoleDeleted($event);
 
         $deletedRole = $this->ncr->getNode($nodeRef);
         $this->assertEquals(NodeStatus::DELETED(), $deletedRole->get('status'));
@@ -113,8 +111,7 @@ class RoleProjectorTest extends AbstractPbjxTest
     public function testOnRoleDeletedNodeRefNotExists(): void
     {
         $event = RoleDeletedV1::create()->set('node_ref', NodeRef::fromString('acme:role:role-not-exists'));
-
-        $this->roleProjecter->onRoleDeleted($event, $this->pbjx);
+        $this->roleProjecter->onRoleDeleted($event);
     }
 
     /**

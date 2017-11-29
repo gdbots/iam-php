@@ -35,5 +35,4 @@ class MockNcrSearch implements NcrSearch
     {
         // do nothing
     }
-
 }

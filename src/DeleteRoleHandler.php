@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Gdbots\Iam;
 
-use Gdbots\Pbj\MessageResolver;
 use Gdbots\Pbjx\CommandHandler;
 use Gdbots\Pbjx\CommandHandlerTrait;
 use Gdbots\Pbjx\Pbjx;
@@ -21,7 +20,7 @@ final class DeleteRoleHandler implements CommandHandler
      */
     protected function handle(DeleteRole $command, Pbjx $pbjx): void
     {
-        $event = MessageResolver::findOneUsingMixin(RoleDeletedV1Mixin::create(), 'iam', 'event')->createMessage();
+        $event = RoleDeletedV1Mixin::findOne()->createMessage();
         $event = $event->set('node_ref', $command->get('node_ref'));
         $pbjx->copyContext($command, $event);
 

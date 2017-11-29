@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Gdbots\Iam;
 
@@ -61,6 +61,7 @@ class GetRoleBatchRequestHandlerTest extends AbstractPbjxTest
 
     /**
      * @param string $id
+     *
      * @return Node
      */
     public function createRoles(string $id = ''): Node

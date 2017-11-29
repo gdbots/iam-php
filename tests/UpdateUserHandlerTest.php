@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Gdbots\Tests\Iam;
 
@@ -19,18 +19,18 @@ class UpdateUserHandlerTest extends AbstractPbjxTest
         $command = UpdateUserV1::create();
 
         $oldNode = UserV1::fromArray([
-            '_id' => '7afcc2f1-9654-46d1-8fc1-b0511df257db',
+            '_id'   => '7afcc2f1-9654-46d1-8fc1-b0511df257db',
             'email' => 'homer@simpson.com',
             'title' => 'Homer Test',
-            'roles' => ['acme:role:super-user']
+            'roles' => ['acme:role:super-user'],
         ]);
 
         $newNode = UserV1::fromArray([
-            '_id' => '7afcc2f1-9654-46d1-8fc1-b0511df257db',
-            'email' => 'homer-updated@simpson.com',
+            '_id'        => '7afcc2f1-9654-46d1-8fc1-b0511df257db',
+            'email'      => 'homer-updated@simpson.com',
             'first_name' => 'Update',
-            'last_name' => 'Title',
-            'roles' => ['acme:role:tester']
+            'last_name'  => 'Title',
+            'roles'      => ['acme:role:tester'],
         ]);
 
         $command->set('old_node', $oldNode);
@@ -45,8 +45,7 @@ class UpdateUserHandlerTest extends AbstractPbjxTest
         $expectedRoles = $oldNode->get('roles');
 
         $this->eventStore->pipeAllEvents(
-            function(Event $event, StreamId $streamId) use ($expectedEvent, $expectedId, $expectedEmail, $expectedRoles)
-            {
+            function (Event $event, StreamId $streamId) use ($expectedEvent, $expectedId, $expectedEmail, $expectedRoles) {
                 $this->assertSame($event::schema(), $expectedEvent::schema());
                 $this->assertTrue($event->has('old_node'));
                 $this->assertTrue($event->has('new_node'));

@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace Gdbots\Iam;
 
 use Gdbots\Ncr\Ncr;
-use Gdbots\Pbj\MessageResolver;
 use Gdbots\Pbjx\RequestHandler;
 use Gdbots\Pbjx\RequestHandlerTrait;
 use Gdbots\Schemas\Iam\Mixin\GetUserBatchRequest\GetUserBatchRequest;
@@ -34,7 +33,7 @@ final class GetUserBatchRequestHandler implements RequestHandler
      */
     protected function handle(GetUserBatchRequest $request): GetUserBatchResponse
     {
-        $schema = MessageResolver::findOneUsingMixin(GetUserBatchResponseV1Mixin::create(), 'iam', 'request');
+        $schema = GetUserBatchResponseV1Mixin::findOne();
         /** @var GetUserBatchResponse $response */
         $response = $schema->createMessage();
         $nodeRefs = $request->get('node_refs');

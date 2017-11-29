@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Gdbots\Iam;
 
-use Gdbots\Pbj\MessageResolver;
 use Gdbots\Pbjx\CommandHandler;
 use Gdbots\Pbjx\CommandHandlerTrait;
 use Gdbots\Pbjx\Pbjx;
@@ -21,7 +20,7 @@ final class RevokeRolesFromUserHandler implements CommandHandler
      */
     protected function handle(RevokeRolesFromUser $command, Pbjx $pbjx): void
     {
-        $event = MessageResolver::findOneUsingMixin(UserRolesRevokedV1Mixin::create(), 'iam', 'event')->createMessage();
+        $event = UserRolesRevokedV1Mixin::findOne()->createMessage();
         $event = $event->set('node_ref', $command->get('node_ref'));
         $pbjx->copyContext($command, $event);
 

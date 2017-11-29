@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Gdbots\Tests\Iam;
 
@@ -38,7 +38,7 @@ final class UpdateRoleHandlerTest extends AbstractPbjxTest
         $expectedEvent = RoleUpdatedV1::create();
         $expectedId = $oldNode->get('_id');
 
-        $this->eventStore->pipeAllEvents(function(Event $event, StreamId $streamId) use ($expectedEvent, $expectedId) {
+        $this->eventStore->pipeAllEvents(function (Event $event, StreamId $streamId) use ($expectedEvent, $expectedId) {
             $this->assertSame($event::schema(), $expectedEvent::schema());
             $this->assertTrue($event->has('old_node'));
             $this->assertTrue($event->has('new_node'));
@@ -70,7 +70,7 @@ final class UpdateRoleHandlerTest extends AbstractPbjxTest
         $expectedEvent = RoleUpdatedV1::create();
         $expectedId = $newNode->get('_id');
 
-        $this->eventStore->pipeAllEvents(function(Event $event, StreamId $streamId) use ($expectedEvent, $expectedId) {
+        $this->eventStore->pipeAllEvents(function (Event $event, StreamId $streamId) use ($expectedEvent, $expectedId) {
             $this->assertSame($event::schema(), $expectedEvent::schema());
             $this->assertFalse($event->has('old_node'));
             $this->assertTrue($event->has('new_node'));
@@ -107,7 +107,7 @@ final class UpdateRoleHandlerTest extends AbstractPbjxTest
         $expectedEvent = RoleUpdatedV1::create();
         $expectedId = $oldNode->get('_id');
 
-        $this->eventStore->pipeAllEvents(function(Event $event, StreamId $streamId) use ($expectedEvent, $expectedId) {
+        $this->eventStore->pipeAllEvents(function (Event $event, StreamId $streamId) use ($expectedEvent, $expectedId) {
             $this->assertSame($event::schema(), $expectedEvent::schema());
             $this->assertTrue($event->has('old_node'));
             $this->assertTrue($event->has('new_node'));

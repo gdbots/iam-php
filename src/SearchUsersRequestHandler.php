@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace Gdbots\Iam;
 
 use Gdbots\Ncr\NcrSearch;
-use Gdbots\Pbj\MessageResolver;
 use Gdbots\Pbj\SchemaQName;
 use Gdbots\Pbjx\RequestHandler;
 use Gdbots\Pbjx\RequestHandlerTrait;
@@ -41,7 +40,7 @@ final class SearchUsersRequestHandler implements RequestHandler
      */
     protected function handle(SearchUsersRequest $request): SearchUsersResponse
     {
-        $schema = MessageResolver::findOneUsingMixin(SearchUsersResponseV1Mixin::create(), 'iam', 'request');
+        $schema = SearchUsersResponseV1Mixin::findOne();
         /** @var SearchUsersResponse $response */
         $response = $schema->createMessage();
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace Gdbots\Iam;
 
 use Gdbots\Ncr\Ncr;
-use Gdbots\Pbj\MessageResolver;
 use Gdbots\Pbjx\RequestHandler;
 use Gdbots\Pbjx\RequestHandlerTrait;
 use Gdbots\Schemas\Iam\Mixin\GetRoleBatchRequest\GetRoleBatchRequest;
@@ -34,7 +33,7 @@ final class GetRoleBatchRequestHandler implements RequestHandler
      */
     protected function handle(GetRoleBatchRequest $request): GetRoleBatchResponse
     {
-        $schema = MessageResolver::findOneUsingMixin(GetRoleBatchResponseV1Mixin::create(), 'iam', 'request');
+        $schema = GetRoleBatchResponseV1Mixin::findOne();
         /** @var GetRoleBatchResponse $response */
         $response = $schema->createMessage();
         $nodeRefs = $request->get('node_refs');

@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Gdbots\Iam;
 
@@ -16,7 +16,7 @@ class GetRoleRequestHandlerTest extends AbstractPbjxTest
         $this->createRole();
 
         $request = GetRoleRequestV1::fromArray([
-            'node_ref' => 'acme:role:super-user'
+            'node_ref' => 'acme:role:super-user',
         ]);
 
         $handler = new GetRoleRequestHandler($this->ncr);
@@ -47,7 +47,7 @@ class GetRoleRequestHandlerTest extends AbstractPbjxTest
     public function testHandleNodeNotFound()
     {
         $request = GetRoleRequestV1::fromArray([
-            'node_ref' => 'acme:role:wrong-node-ref'
+            'node_ref' => 'acme:role:wrong-node-ref',
         ]);
 
         $handler = new GetRoleRequestHandler($this->ncr);

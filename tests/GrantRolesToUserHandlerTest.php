@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Gdbots\Tests\Iam;
 
@@ -17,19 +17,19 @@ class GrantRolesToUserHandlerTest extends AbstractPbjxTest
         $node_ref = NodeRef::fromString('acme:user:8695f644-0e7f-11e7-93ae-92361f002671');
         $roles = [
             NodeRef::fromString('acme:role:admin-user'),
-            NodeRef::fromString('acme:role:tester-user')
+            NodeRef::fromString('acme:role:tester-user'),
         ];
 
         $command = GrantRolesToUserV1::create()
-        ->set('node_ref', $node_ref)
-        ->addToSet('roles', $roles);
+            ->set('node_ref', $node_ref)
+            ->addToSet('roles', $roles);
 
         $expectedEvent = UserRolesGrantedV1::create();
 
         $handler = new GrantRolesToUserHandler();
         $handler->handleCommand($command, $this->pbjx);
 
-        $this->eventStore->pipeAllEvents(function(Event $event, StreamId $streamId) use ($expectedEvent, $roles) {
+        $this->eventStore->pipeAllEvents(function (Event $event, StreamId $streamId) use ($expectedEvent, $roles) {
             $this->assertSame($event::schema(), $expectedEvent::schema());
             $this->assertSame(StreamId::fromString("user.history:{$event->get('node_ref')->getId()}")->toString(), $streamId->toString());
             $this->assertSame($roles, $event->get('roles'));
@@ -47,7 +47,7 @@ class GrantRolesToUserHandlerTest extends AbstractPbjxTest
         $handler = new GrantRolesToUserHandler();
         $handler->handleCommand($command, $this->pbjx);
 
-        $this->eventStore->pipeAllEvents(function(Event $event, StreamId $streamId) use ($expectedEvent) {
+        $this->eventStore->pipeAllEvents(function (Event $event, StreamId $streamId) use ($expectedEvent) {
             $this->assertSame($event::schema(), $expectedEvent::schema());
             $this->assertSame(StreamId::fromString("user.history:{$event->get('node_ref')->getId()}")->toString(), $streamId->toString());
             $this->assertEmpty($event->get('roles'));

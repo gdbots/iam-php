@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Gdbots\Iam;
 
-use Gdbots\Pbj\MessageResolver;
 use Gdbots\Pbjx\CommandHandler;
 use Gdbots\Pbjx\CommandHandlerTrait;
 use Gdbots\Pbjx\Pbjx;
@@ -23,7 +22,7 @@ final class UpdateUserHandler implements CommandHandler
      */
     protected function handle(UpdateUser $command, Pbjx $pbjx): void
     {
-        $event = MessageResolver::findOneUsingMixin(UserUpdatedV1Mixin::create(), 'iam', 'event')->createMessage();
+        $event = UserUpdatedV1Mixin::findOne()->createMessage();
         $pbjx->copyContext($command, $event);
 
         /** @var User $newNode */

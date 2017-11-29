@@ -5,7 +5,6 @@ namespace Gdbots\Iam\Validator;
 
 use Gdbots\Iam\Exception\UserAlreadyExists;
 use Gdbots\Pbj\Assertion;
-use Gdbots\Pbj\MessageResolver;
 use Gdbots\Pbj\WellKnown\Identifier;
 use Gdbots\Pbjx\Event\PbjxEvent;
 use Gdbots\Pbjx\EventSubscriber;
@@ -86,8 +85,8 @@ final class UniqueUserValidator implements EventSubscriber
         $message = $pbjxEvent->getMessage();
 
         try {
-            $getUserSchema = MessageResolver::findOneUsingMixin(GetUserRequestV1Mixin::create(), 'iam', 'request');
-            $userSchema = MessageResolver::findOneUsingMixin(UserV1Mixin::create(), 'iam', 'node');
+            $getUserSchema = GetUserRequestV1Mixin::findOne();
+            $userSchema = UserV1Mixin::findOne();
             /** @var Request $request */
             $request = $getUserSchema->createMessage()
                 ->set('consistent_read', true)

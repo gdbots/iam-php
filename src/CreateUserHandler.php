@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Gdbots\Iam;
 
-use Gdbots\Pbj\MessageResolver;
 use Gdbots\Pbjx\CommandHandler;
 use Gdbots\Pbjx\CommandHandlerTrait;
 use Gdbots\Pbjx\Pbjx;
@@ -25,7 +24,7 @@ final class CreateUserHandler implements CommandHandler
      */
     protected function handle(CreateUser $command, Pbjx $pbjx): void
     {
-        $event = MessageResolver::findOneUsingMixin(UserCreatedV1Mixin::create(), 'iam', 'event')->createMessage();
+        $event = UserCreatedV1Mixin::findOne()->createMessage();
         $pbjx->copyContext($command, $event);
 
         /** @var User $node */

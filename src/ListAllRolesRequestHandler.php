@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace Gdbots\Iam;
 
 use Gdbots\Ncr\Ncr;
-use Gdbots\Pbj\MessageResolver;
 use Gdbots\Pbj\SchemaQName;
 use Gdbots\Pbjx\RequestHandler;
 use Gdbots\Pbjx\RequestHandlerTrait;
@@ -32,7 +31,7 @@ final class ListAllRolesRequestHandler implements RequestHandler
      */
     protected function handle(): ListAllRolesResponse
     {
-        $schema = MessageResolver::findOneUsingMixin(ListAllRolesResponseV1Mixin::create(), 'iam', 'request');
+        $schema = ListAllRolesResponseV1Mixin::findOne();
         /** @var ListAllRolesResponse $response */
         $response = $schema->createMessage();
 

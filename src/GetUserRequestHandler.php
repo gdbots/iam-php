@@ -6,7 +6,6 @@ namespace Gdbots\Iam;
 use Gdbots\Ncr\Exception\NodeNotFound;
 use Gdbots\Ncr\IndexQueryBuilder;
 use Gdbots\Ncr\Ncr;
-use Gdbots\Pbj\MessageResolver;
 use Gdbots\Pbj\SchemaQName;
 use Gdbots\Pbjx\RequestHandler;
 use Gdbots\Pbjx\RequestHandlerTrait;
@@ -53,7 +52,7 @@ final class GetUserRequestHandler implements RequestHandler
             throw new NodeNotFound('No method available to find user.');
         }
 
-        $schema = MessageResolver::findOneUsingMixin(GetUserResponseV1Mixin::create(), 'iam', 'request');
+        $schema = GetUserResponseV1Mixin::findOne();
         /** @var GetUserResponse $response */
         $response = $schema->createMessage();
         return $response->set('node', $node);

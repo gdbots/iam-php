@@ -8,8 +8,8 @@
     "gdbots/ncr": "~0.1"
   },
   "require-dev": {
-    "phpunit/phpunit": "~6.0",
-    "gdbots/acme-schemas": "dev-master"
+    "phpunit/phpunit": "^6.4",
+    "gdbots/acme-schemas": "^1.1"
   },
   "autoload": {
     "psr-4": {

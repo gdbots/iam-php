@@ -5,7 +5,6 @@ namespace Gdbots\Iam;
 
 use Gdbots\Ncr\Exception\NodeNotFound;
 use Gdbots\Ncr\Ncr;
-use Gdbots\Pbj\MessageResolver;
 use Gdbots\Pbjx\RequestHandler;
 use Gdbots\Pbjx\RequestHandlerTrait;
 use Gdbots\Schemas\Iam\Mixin\GetRoleRequest\GetRoleRequest;
@@ -40,7 +39,7 @@ final class GetRoleRequestHandler implements RequestHandler
 
         $node = $this->ncr->getNode($request->get('node_ref'), $request->get('consistent_read'));
 
-        $schema = MessageResolver::findOneUsingMixin(GetRoleResponseV1Mixin::create(), 'iam', 'request');
+        $schema = GetRoleResponseV1Mixin::findOne();
         /** @var GetRoleResponse $response */
         $response = $schema->createMessage();
         return $response->set('node', $node);
