@@ -11,8 +11,7 @@ use Gdbots\Schemas\Ncr\Enum\NodeStatus;
 use Gdbots\Schemas\Pbjx\Mixin\Event\Event;
 use Gdbots\Schemas\Pbjx\StreamId;
 
-
-class UpdateUserHandlerTest extends AbstractPbjxTest
+final class UpdateUserHandlerTest extends AbstractPbjxTest
 {
     public function testUpdateUser()
     {

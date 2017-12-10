@@ -11,7 +11,7 @@ use Gdbots\Pbj\WellKnown\Microtime;
 use Gdbots\Schemas\Pbjx\StreamId;
 use Gdbots\Tests\Iam\AbstractPbjxTest;
 
-class GetRoleHistoryResquestHandlerTest extends AbstractPbjxTest
+final class GetRoleHistoryResquestHandlerTest extends AbstractPbjxTest
 {
     /**
      * testHandleRequest. Test with default args

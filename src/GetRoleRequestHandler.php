@@ -8,6 +8,7 @@ use Gdbots\Ncr\Ncr;
 use Gdbots\Pbjx\RequestHandler;
 use Gdbots\Pbjx\RequestHandlerTrait;
 use Gdbots\Schemas\Iam\Mixin\GetRoleRequest\GetRoleRequest;
+use Gdbots\Schemas\Iam\Mixin\GetRoleRequest\GetRoleRequestV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\GetRoleResponse\GetRoleResponse;
 use Gdbots\Schemas\Iam\Mixin\GetRoleResponse\GetRoleResponseV1Mixin;
 
@@ -43,5 +44,15 @@ final class GetRoleRequestHandler implements RequestHandler
         /** @var GetRoleResponse $response */
         $response = $schema->createMessage();
         return $response->set('node', $node);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function handlesCuries(): array
+    {
+        return [
+            GetRoleRequestV1Mixin::findOne()->getCurie(),
+        ];
     }
 }

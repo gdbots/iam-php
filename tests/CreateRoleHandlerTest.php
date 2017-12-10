@@ -11,7 +11,7 @@ use Gdbots\Schemas\Ncr\Enum\NodeStatus;
 use Gdbots\Schemas\Pbjx\Mixin\Event\Event;
 use Gdbots\Schemas\Pbjx\StreamId;
 
-class CreateRoleHandlerTest extends AbstractPbjxTest
+final class CreateRoleHandlerTest extends AbstractPbjxTest
 {
     public function testHandleCommand()
     {

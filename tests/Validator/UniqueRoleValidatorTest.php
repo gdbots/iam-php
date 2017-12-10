@@ -15,7 +15,7 @@ use Gdbots\Schemas\Iam\RoleId;
 use Gdbots\Schemas\Pbjx\StreamId;
 use Gdbots\Tests\Iam\AbstractPbjxTest;
 
-class UniqueRoleValidatorTest extends AbstractPbjxTest
+final class UniqueRoleValidatorTest extends AbstractPbjxTest
 {
     public function setup()
     {

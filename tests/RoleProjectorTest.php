@@ -9,10 +9,9 @@ use Acme\Schemas\Iam\Event\RoleUpdatedV1;
 use Acme\Schemas\Iam\Node\RoleV1;
 use Gdbots\Iam\RoleProjector;
 use Gdbots\Schemas\Iam\RoleId;
-use Gdbots\Schemas\Ncr\Enum\NodeStatus;
 use Gdbots\Schemas\Ncr\NodeRef;
 
-class RoleProjectorTest extends AbstractPbjxTest
+final class RoleProjectorTest extends AbstractPbjxTest
 {
     /** @var RoleProjector */
     protected $roleProjecter;
@@ -89,7 +88,7 @@ class RoleProjectorTest extends AbstractPbjxTest
     }
 
     /**
-     * testOnRoleDeleted
+     * @expectedException \Gdbots\Ncr\Exception\NodeNotFound
      */
     public function testOnRoleDeleted(): void
     {
@@ -98,20 +97,16 @@ class RoleProjectorTest extends AbstractPbjxTest
         $this->ncr->putNode($role);
 
         $event = RoleDeletedV1::create()->set('node_ref', $nodeRef);
-
         $this->roleProjecter->onRoleDeleted($event);
 
-        $deletedRole = $this->ncr->getNode($nodeRef);
-        $this->assertEquals(NodeStatus::DELETED(), $deletedRole->get('status'));
+        $this->ncr->getNode($nodeRef);
     }
 
-    /**
-     * @expectedException \Gdbots\Ncr\Exception\NodeNotFound
-     */
     public function testOnRoleDeletedNodeRefNotExists(): void
     {
         $event = RoleDeletedV1::create()->set('node_ref', NodeRef::fromString('acme:role:role-not-exists'));
         $this->roleProjecter->onRoleDeleted($event);
+        $this->assertTrue(true, 'No exception on missing node_ref');
     }
 
     /**

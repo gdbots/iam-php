@@ -7,6 +7,7 @@ use Gdbots\Ncr\Ncr;
 use Gdbots\Pbj\SchemaQName;
 use Gdbots\Pbjx\RequestHandler;
 use Gdbots\Pbjx\RequestHandlerTrait;
+use Gdbots\Schemas\Iam\Mixin\ListAllRolesRequest\ListAllRolesRequestV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\ListAllRolesResponse\ListAllRolesResponse;
 use Gdbots\Schemas\Iam\Mixin\ListAllRolesResponse\ListAllRolesResponseV1Mixin;
 use Gdbots\Schemas\Ncr\NodeRef;
@@ -43,5 +44,15 @@ final class ListAllRolesRequestHandler implements RequestHandler
         });
 
         return $response->addToSet('roles', $roles);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function handlesCuries(): array
+    {
+        return [
+            ListAllRolesRequestV1Mixin::findOne()->getCurie(),
+        ];
     }
 }

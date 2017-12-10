@@ -7,6 +7,7 @@ use Gdbots\Pbjx\Pbjx;
 use Gdbots\Pbjx\RequestHandler;
 use Gdbots\Pbjx\RequestHandlerTrait;
 use Gdbots\Schemas\Iam\Mixin\GetRoleHistoryRequest\GetRoleHistoryRequest;
+use Gdbots\Schemas\Iam\Mixin\GetRoleHistoryRequest\GetRoleHistoryRequestV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\GetRoleHistoryResponse\GetRoleHistoryResponse;
 use Gdbots\Schemas\Iam\Mixin\GetRoleHistoryResponse\GetRoleHistoryResponseV1Mixin;
 
@@ -37,5 +38,15 @@ final class GetRoleHistoryRequestHandler implements RequestHandler
             ->set('has_more', $slice->hasMore())
             ->set('last_occurred_at', $slice->getLastOccurredAt())
             ->addToList('events', $slice->toArray()['events']);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function handlesCuries(): array
+    {
+        return [
+            GetRoleHistoryRequestV1Mixin::findOne()->getCurie(),
+        ];
     }
 }

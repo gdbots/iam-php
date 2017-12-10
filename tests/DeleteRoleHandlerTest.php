@@ -10,7 +10,7 @@ use Gdbots\Schemas\Ncr\NodeRef;
 use Gdbots\Schemas\Pbjx\Mixin\Event\Event;
 use Gdbots\Schemas\Pbjx\StreamId;
 
-class DeleteRoleHandlerTest extends AbstractPbjxTest
+final class DeleteRoleHandlerTest extends AbstractPbjxTest
 {
     public function testHandleCommand()
     {

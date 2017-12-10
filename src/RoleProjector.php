@@ -4,15 +4,15 @@ declare(strict_types=1);
 namespace Gdbots\Iam;
 
 use Gdbots\Ncr\Ncr;
+use Gdbots\Pbjx\DependencyInjection\PbjxProjector;
 use Gdbots\Pbjx\EventSubscriberTrait;
 use Gdbots\Schemas\Iam\Mixin\RoleCreated\RoleCreated;
 use Gdbots\Schemas\Iam\Mixin\RoleDeleted\RoleDeleted;
 use Gdbots\Schemas\Iam\Mixin\RoleUpdated\RoleUpdated;
-use Gdbots\Schemas\Ncr\Enum\NodeStatus;
 use Gdbots\Schemas\Ncr\Mixin\Node\Node;
 use Gdbots\Schemas\Pbjx\Mixin\Event\Event;
 
-class RoleProjector
+class RoleProjector implements PbjxProjector
 {
     use EventSubscriberTrait;
 
@@ -51,10 +51,7 @@ class RoleProjector
      */
     public function onRoleDeleted(RoleDeleted $event): void
     {
-        $node = $this->ncr->getNode($event->get('node_ref'), true);
-        // using soft delete for roles
-        $node->set('status', NodeStatus::DELETED());
-        $this->putNode($node, $event);
+        $this->ncr->deleteNode($event->get('node_ref'));
     }
 
     /**

@@ -5,6 +5,7 @@ namespace Gdbots\Iam;
 
 use Gdbots\Ncr\Ncr;
 use Gdbots\Ncr\NcrSearch;
+use Gdbots\Pbjx\DependencyInjection\PbjxProjector;
 use Gdbots\Pbjx\EventSubscriberTrait;
 use Gdbots\Schemas\Iam\Mixin\UserCreated\UserCreated;
 use Gdbots\Schemas\Iam\Mixin\UserDeleted\UserDeleted;
@@ -15,7 +16,7 @@ use Gdbots\Schemas\Ncr\Enum\NodeStatus;
 use Gdbots\Schemas\Ncr\Mixin\Node\Node;
 use Gdbots\Schemas\Pbjx\Mixin\Event\Event;
 
-class UserProjector
+class UserProjector implements PbjxProjector
 {
     use EventSubscriberTrait;
 

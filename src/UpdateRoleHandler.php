@@ -9,6 +9,7 @@ use Gdbots\Pbjx\Pbjx;
 use Gdbots\Schemas\Iam\Mixin\Role\Role;
 use Gdbots\Schemas\Iam\Mixin\RoleUpdated\RoleUpdatedV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\UpdateRole\UpdateRole;
+use Gdbots\Schemas\Iam\Mixin\UpdateRole\UpdateRoleV1Mixin;
 use Gdbots\Schemas\Ncr\Enum\NodeStatus;
 use Gdbots\Schemas\Pbjx\StreamId;
 
@@ -28,6 +29,8 @@ final class UpdateRoleHandler implements CommandHandler
         /** @var Role $newNode */
         $newNode = clone $command->get('new_node');
         $newNode
+            // a role can only be "published"
+            ->set('status', NodeStatus::PUBLISHED())
             ->set('updated_at', $event->get('occurred_at'))
             ->set('updater_ref', $event->get('ctx_user_ref'))
             ->set('last_event_ref', $event->generateMessageRef())
@@ -40,17 +43,9 @@ final class UpdateRoleHandler implements CommandHandler
                 ->set('old_etag', $oldNode->get('etag'));
 
             $newNode
-                // status SHOULD NOT change during an update, use the appropriate
-                // command to change a status (delete, publish, etc.)
-                ->set('status', $oldNode->get('status'))
                 // created_at and creator_ref MUST NOT change
                 ->set('created_at', $oldNode->get('created_at'))
                 ->set('creator_ref', $oldNode->get('creator_ref'));
-        }
-
-        // the status is either "published" or "deleted"
-        if (!NodeStatus::DELETED()->equals($newNode->get('status'))) {
-            $newNode->set('status', NodeStatus::PUBLISHED());
         }
 
         $newNode->set('etag', $newNode->generateEtag(['etag', 'updated_at']));
@@ -61,5 +56,15 @@ final class UpdateRoleHandler implements CommandHandler
 
         $streamId = StreamId::fromString(sprintf('role.history:%s', $newNode->get('_id')));
         $pbjx->getEventStore()->putEvents($streamId, [$event]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function handlesCuries(): array
+    {
+        return [
+            UpdateRoleV1Mixin::findOne()->getCurie(),
+        ];
     }
 }

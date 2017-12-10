@@ -9,7 +9,7 @@ use Gdbots\Iam\ListAllRolesRequestHandler;
 use Gdbots\Schemas\Iam\RoleId;
 use Gdbots\Schemas\Ncr\NodeRef;
 
-class ListAllRolesRequestHandlerTest extends AbstractPbjxTest
+final class ListAllRolesRequestHandlerTest extends AbstractPbjxTest
 {
     public function testWithResultsExpected()
     {
