@@ -7,6 +7,7 @@ use Gdbots\Pbjx\CommandHandler;
 use Gdbots\Pbjx\CommandHandlerTrait;
 use Gdbots\Pbjx\Pbjx;
 use Gdbots\Schemas\Iam\Mixin\UpdateUser\UpdateUser;
+use Gdbots\Schemas\Iam\Mixin\UpdateUser\UpdateUserV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\User\User;
 use Gdbots\Schemas\Iam\Mixin\UserUpdated\UserUpdatedV1Mixin;
 use Gdbots\Schemas\Ncr\Enum\NodeStatus;
@@ -78,5 +79,15 @@ final class UpdateUserHandler implements CommandHandler
 
         $streamId = StreamId::fromString(sprintf('user.history:%s', $newNode->get('_id')));
         $pbjx->getEventStore()->putEvents($streamId, [$event]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function handlesCuries(): array
+    {
+        return [
+            UpdateUserV1Mixin::findOne()->getCurie(),
+        ];
     }
 }

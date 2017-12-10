@@ -7,6 +7,7 @@ use Gdbots\Ncr\Ncr;
 use Gdbots\Pbjx\RequestHandler;
 use Gdbots\Pbjx\RequestHandlerTrait;
 use Gdbots\Schemas\Iam\Mixin\GetUserBatchRequest\GetUserBatchRequest;
+use Gdbots\Schemas\Iam\Mixin\GetUserBatchRequest\GetUserBatchRequestV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\GetUserBatchResponse\GetUserBatchResponse;
 use Gdbots\Schemas\Iam\Mixin\GetUserBatchResponse\GetUserBatchResponseV1Mixin;
 use Gdbots\Schemas\Ncr\NodeRef;
@@ -54,5 +55,15 @@ final class GetUserBatchRequestHandler implements RequestHandler
         $response->addToSet('missing_node_refs', $missing);
 
         return $response;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function handlesCuries(): array
+    {
+        return [
+            GetUserBatchRequestV1Mixin::findOne()->getCurie(),
+        ];
     }
 }

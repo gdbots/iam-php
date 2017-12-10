@@ -9,7 +9,7 @@ use Gdbots\Schemas\Iam\Mixin\Role\Role;
 use Gdbots\Schemas\Iam\RoleId;
 use PHPUnit\Framework\TestCase;
 
-class PolicyTest extends TestCase
+final class PolicyTest extends TestCase
 {
     /**
      * @dataProvider getIsGrantedSamples

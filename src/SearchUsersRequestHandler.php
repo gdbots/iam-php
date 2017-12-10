@@ -13,6 +13,7 @@ use Gdbots\QueryParser\Node\Word;
 use Gdbots\QueryParser\ParsedQuery;
 use Gdbots\Schemas\Common\Enum\Trinary;
 use Gdbots\Schemas\Iam\Mixin\SearchUsersRequest\SearchUsersRequest;
+use Gdbots\Schemas\Iam\Mixin\SearchUsersRequest\SearchUsersRequestV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\SearchUsersResponse\SearchUsersResponse;
 use Gdbots\Schemas\Iam\Mixin\SearchUsersResponse\SearchUsersResponseV1Mixin;
 use Gdbots\Schemas\Ncr\Enum\NodeStatus;
@@ -73,5 +74,15 @@ final class SearchUsersRequestHandler implements RequestHandler
         );
 
         return $response;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function handlesCuries(): array
+    {
+        return [
+            SearchUsersRequestV1Mixin::findOne()->getCurie(),
+        ];
     }
 }

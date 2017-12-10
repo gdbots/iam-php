@@ -10,7 +10,7 @@ use Gdbots\Iam\GetUserRequestHandler;
 use Gdbots\Pbj\SchemaQName;
 use Gdbots\Schemas\Ncr\NodeRef;
 
-class GetUserRequestHandlerTest extends AbstractPbjxTest
+final class GetUserRequestHandlerTest extends AbstractPbjxTest
 {
     public function testGetByNodeRefThatExists()
     {

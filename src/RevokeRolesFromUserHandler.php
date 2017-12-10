@@ -7,6 +7,7 @@ use Gdbots\Pbjx\CommandHandler;
 use Gdbots\Pbjx\CommandHandlerTrait;
 use Gdbots\Pbjx\Pbjx;
 use Gdbots\Schemas\Iam\Mixin\RevokeRolesFromUser\RevokeRolesFromUser;
+use Gdbots\Schemas\Iam\Mixin\RevokeRolesFromUser\RevokeRolesFromUserV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\UserRolesRevoked\UserRolesRevokedV1Mixin;
 use Gdbots\Schemas\Pbjx\StreamId;
 
@@ -28,5 +29,15 @@ final class RevokeRolesFromUserHandler implements CommandHandler
 
         $streamId = StreamId::fromString(sprintf('user.history:%s', $event->get('node_ref')->getId()));
         $pbjx->getEventStore()->putEvents($streamId, [$event]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function handlesCuries(): array
+    {
+        return [
+            RevokeRolesFromUserV1Mixin::findOne()->getCurie(),
+        ];
     }
 }

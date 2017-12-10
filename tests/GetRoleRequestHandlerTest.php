@@ -9,7 +9,7 @@ use Gdbots\Pbj\WellKnown\Microtime;
 use Gdbots\Schemas\Iam\RoleId;
 use Gdbots\Tests\Iam\AbstractPbjxTest;
 
-class GetRoleRequestHandlerTest extends AbstractPbjxTest
+final class GetRoleRequestHandlerTest extends AbstractPbjxTest
 {
     public function testHandleRequest()
     {
@@ -30,7 +30,7 @@ class GetRoleRequestHandlerTest extends AbstractPbjxTest
     }
 
     /**
-     * @expectedException Gdbots\Ncr\Exception\NodeNotFound
+     * @expectedException \Gdbots\Ncr\Exception\NodeNotFound
      * @expectedExceptionMessage No method available to find role.
      */
     public function testHandleNodeRefNotFound()
@@ -42,7 +42,7 @@ class GetRoleRequestHandlerTest extends AbstractPbjxTest
     }
 
     /**
-     * @expectedException Gdbots\Ncr\Exception\NodeNotFound
+     * @expectedException \Gdbots\Ncr\Exception\NodeNotFound
      */
     public function testHandleNodeNotFound()
     {

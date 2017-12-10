@@ -12,7 +12,7 @@ use Gdbots\Schemas\Ncr\NodeRef;
 use Gdbots\Schemas\Pbjx\Mixin\Event\Event;
 use Gdbots\Schemas\Pbjx\StreamId;
 
-class CreateUserHandlerTest extends AbstractPbjxTest
+final class CreateUserHandlerTest extends AbstractPbjxTest
 {
     public function testHandleCommand()
     {

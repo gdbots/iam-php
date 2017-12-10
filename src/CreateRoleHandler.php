@@ -7,6 +7,7 @@ use Gdbots\Pbjx\CommandHandler;
 use Gdbots\Pbjx\CommandHandlerTrait;
 use Gdbots\Pbjx\Pbjx;
 use Gdbots\Schemas\Iam\Mixin\CreateRole\CreateRole;
+use Gdbots\Schemas\Iam\Mixin\CreateRole\CreateRoleV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\Role\Role;
 use Gdbots\Schemas\Iam\Mixin\RoleCreated\RoleCreatedV1Mixin;
 use Gdbots\Schemas\Ncr\Enum\NodeStatus;
@@ -42,5 +43,15 @@ final class CreateRoleHandler implements CommandHandler
 
         $streamId = StreamId::fromString(sprintf('role.history:%s', $node->get('_id')));
         $pbjx->getEventStore()->putEvents($streamId, [$event]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function handlesCuries(): array
+    {
+        return [
+            CreateRoleV1Mixin::findOne()->getCurie(),
+        ];
     }
 }

@@ -16,7 +16,7 @@ use Gdbots\Schemas\Iam\RoleId;
 use Gdbots\Schemas\Ncr\Enum\NodeStatus;
 use Gdbots\Schemas\Ncr\NodeRef;
 
-class UserProjectorTest extends AbstractPbjxTest
+final class UserProjectorTest extends AbstractPbjxTest
 {
     /** @var UserProjector */
     protected $userProjector;

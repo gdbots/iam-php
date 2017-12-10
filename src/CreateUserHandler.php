@@ -7,6 +7,7 @@ use Gdbots\Pbjx\CommandHandler;
 use Gdbots\Pbjx\CommandHandlerTrait;
 use Gdbots\Pbjx\Pbjx;
 use Gdbots\Schemas\Iam\Mixin\CreateUser\CreateUser;
+use Gdbots\Schemas\Iam\Mixin\CreateUser\CreateUserV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\User\User;
 use Gdbots\Schemas\Iam\Mixin\UserCreated\UserCreatedV1Mixin;
 use Gdbots\Schemas\Ncr\Enum\NodeStatus;
@@ -54,5 +55,15 @@ final class CreateUserHandler implements CommandHandler
 
         $streamId = StreamId::fromString(sprintf('user.history:%s', $node->get('_id')));
         $pbjx->getEventStore()->putEvents($streamId, [$event]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function handlesCuries(): array
+    {
+        return [
+            CreateUserV1Mixin::findOne()->getCurie(),
+        ];
     }
 }

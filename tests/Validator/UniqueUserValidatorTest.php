@@ -13,7 +13,7 @@ use Gdbots\Pbjx\Event\PbjxEvent;
 use Gdbots\Schemas\Pbjx\StreamId;
 use Gdbots\Tests\Iam\AbstractPbjxTest;
 
-class UniqueUserValidatorTest extends AbstractPbjxTest
+final class UniqueUserValidatorTest extends AbstractPbjxTest
 {
     public function setup()
     {

@@ -10,7 +10,7 @@ use Gdbots\Schemas\Ncr\Mixin\Node\Node;
 use Gdbots\Schemas\Ncr\NodeRef;
 use Gdbots\Tests\Iam\AbstractPbjxTest;
 
-class GetRoleBatchRequestHandlerTest extends AbstractPbjxTest
+final class GetRoleBatchRequestHandlerTest extends AbstractPbjxTest
 {
     public function testHandleRequest()
     {

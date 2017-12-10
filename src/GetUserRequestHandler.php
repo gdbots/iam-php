@@ -10,6 +10,7 @@ use Gdbots\Pbj\SchemaQName;
 use Gdbots\Pbjx\RequestHandler;
 use Gdbots\Pbjx\RequestHandlerTrait;
 use Gdbots\Schemas\Iam\Mixin\GetUserRequest\GetUserRequest;
+use Gdbots\Schemas\Iam\Mixin\GetUserRequest\GetUserRequestV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\GetUserResponse\GetUserResponse;
 use Gdbots\Schemas\Iam\Mixin\GetUserResponse\GetUserResponseV1Mixin;
 
@@ -56,5 +57,15 @@ final class GetUserRequestHandler implements RequestHandler
         /** @var GetUserResponse $response */
         $response = $schema->createMessage();
         return $response->set('node', $node);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function handlesCuries(): array
+    {
+        return [
+            GetUserRequestV1Mixin::findOne()->getCurie(),
+        ];
     }
 }

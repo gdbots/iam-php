@@ -7,6 +7,7 @@ use Gdbots\Pbjx\CommandHandler;
 use Gdbots\Pbjx\CommandHandlerTrait;
 use Gdbots\Pbjx\Pbjx;
 use Gdbots\Schemas\Iam\Mixin\DeleteUser\DeleteUser;
+use Gdbots\Schemas\Iam\Mixin\DeleteUser\DeleteUserV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\UserDeleted\UserDeletedV1Mixin;
 use Gdbots\Schemas\Pbjx\StreamId;
 
@@ -26,5 +27,15 @@ final class DeleteUserHandler implements CommandHandler
 
         $streamId = StreamId::fromString(sprintf('user.history:%s', $event->get('node_ref')->getId()));
         $pbjx->getEventStore()->putEvents($streamId, [$event]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function handlesCuries(): array
+    {
+        return [
+            DeleteUserV1Mixin::findOne()->getCurie(),
+        ];
     }
 }

@@ -7,6 +7,7 @@ use Gdbots\Pbjx\Pbjx;
 use Gdbots\Pbjx\RequestHandler;
 use Gdbots\Pbjx\RequestHandlerTrait;
 use Gdbots\Schemas\Iam\Mixin\GetUserHistoryRequest\GetUserHistoryRequest;
+use Gdbots\Schemas\Iam\Mixin\GetUserHistoryRequest\GetUserHistoryRequestV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\GetUserHistoryResponse\GetUserHistoryResponse;
 use Gdbots\Schemas\Iam\Mixin\GetUserHistoryResponse\GetUserHistoryResponseV1Mixin;
 
@@ -37,5 +38,15 @@ final class GetUserHistoryRequestHandler implements RequestHandler
             ->set('has_more', $slice->hasMore())
             ->set('last_occurred_at', $slice->getLastOccurredAt())
             ->addToList('events', $slice->toArray()['events']);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function handlesCuries(): array
+    {
+        return [
+            GetUserHistoryRequestV1Mixin::findOne()->getCurie(),
+        ];
     }
 }

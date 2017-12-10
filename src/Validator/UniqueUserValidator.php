@@ -6,6 +6,7 @@ namespace Gdbots\Iam\Validator;
 use Gdbots\Iam\Exception\UserAlreadyExists;
 use Gdbots\Pbj\Assertion;
 use Gdbots\Pbj\WellKnown\Identifier;
+use Gdbots\Pbjx\DependencyInjection\PbjxValidator;
 use Gdbots\Pbjx\Event\PbjxEvent;
 use Gdbots\Pbjx\EventSubscriber;
 use Gdbots\Pbjx\Exception\RequestHandlingFailed;
@@ -17,7 +18,7 @@ use Gdbots\Schemas\Pbjx\Enum\Code;
 use Gdbots\Schemas\Pbjx\Mixin\Request\Request;
 use Gdbots\Schemas\Pbjx\StreamId;
 
-final class UniqueUserValidator implements EventSubscriber
+final class UniqueUserValidator implements EventSubscriber, PbjxValidator
 {
     /**
      * @param PbjxEvent $pbjxEvent

@@ -5,6 +5,7 @@ namespace Gdbots\Iam\Validator;
 
 use Gdbots\Iam\Exception\RoleAlreadyExists;
 use Gdbots\Pbj\Assertion;
+use Gdbots\Pbjx\DependencyInjection\PbjxValidator;
 use Gdbots\Pbjx\Event\PbjxEvent;
 use Gdbots\Pbjx\EventSubscriber;
 use Gdbots\Schemas\Iam\Mixin\CreateRole\CreateRole;
@@ -12,7 +13,7 @@ use Gdbots\Schemas\Iam\Mixin\UpdateRole\UpdateRole;
 use Gdbots\Schemas\Iam\RoleId;
 use Gdbots\Schemas\Pbjx\StreamId;
 
-final class UniqueRoleValidator implements EventSubscriber
+final class UniqueRoleValidator implements EventSubscriber, PbjxValidator
 {
     /**
      * @param PbjxEvent $pbjxEvent
