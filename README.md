@@ -25,6 +25,14 @@ services:
 
   Gdbots\Iam\:
     resource: '%kernel.project_dir%/vendor/gdbots/iam/src/**/*'
+
+  Gdbots\Iam\RoleProjector:
+    tags:
+      - {name: pbjx.event_listener, event: '%app_vendor%:iam:event:*', method: onEvent}
+
+  Gdbots\Iam\UserProjector:
+    tags:
+      - {name: pbjx.event_listener, event: '%app_vendor%:iam:event:*', method: onEvent}
 ```
 
 The above services do __NOT__ handle security though, to get that we need deeper integration
