@@ -2,6 +2,12 @@
 This changelog references the relevant changes done in 0.x versions.
 
 
+## v0.2.1
+* Add check in command handlers to ensure the node is really a proper node (user/role).
+* Remove setting of `etag` in `CreateRoleHandler` and `UpdateRoleHandler` as that is now handled in gdbots/ncr.
+* Rename `RoleProjector` and `UserProjector` to `NcrRoleProjector` and `NcrUserProjector` to clarify that these project to the Ncr. 
+
+
 ## v0.2.0
 __BREAKING CHANGES__
 

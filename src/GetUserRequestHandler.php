@@ -13,6 +13,7 @@ use Gdbots\Schemas\Iam\Mixin\GetUserRequest\GetUserRequest;
 use Gdbots\Schemas\Iam\Mixin\GetUserRequest\GetUserRequestV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\GetUserResponse\GetUserResponse;
 use Gdbots\Schemas\Iam\Mixin\GetUserResponse\GetUserResponseV1Mixin;
+use Gdbots\Schemas\Ncr\Enum\NodeStatus;
 
 final class GetUserRequestHandler implements RequestHandler
 {
@@ -42,6 +43,7 @@ final class GetUserRequestHandler implements RequestHandler
             $qname = SchemaQName::fromString($request->get('qname'));
             $query = IndexQueryBuilder::create($qname, 'email', $request->get('email'))
                 ->setCount(1)
+                ->filterEq('status', NodeStatus::PUBLISHED)
                 ->build();
             $result = $this->ncr->findNodeRefs($query);
             if (!$result->count()) {

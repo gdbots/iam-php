@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Gdbots\Iam;
 
+use Gdbots\Pbjx\EventStore\StreamSlice;
 use Gdbots\Pbjx\Pbjx;
 use Gdbots\Pbjx\RequestHandler;
 use Gdbots\Pbjx\RequestHandlerTrait;
@@ -10,6 +11,7 @@ use Gdbots\Schemas\Iam\Mixin\GetUserHistoryRequest\GetUserHistoryRequest;
 use Gdbots\Schemas\Iam\Mixin\GetUserHistoryRequest\GetUserHistoryRequestV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\GetUserHistoryResponse\GetUserHistoryResponse;
 use Gdbots\Schemas\Iam\Mixin\GetUserHistoryResponse\GetUserHistoryResponseV1Mixin;
+use Gdbots\Schemas\Pbjx\StreamId;
 
 final class GetUserHistoryRequestHandler implements RequestHandler
 {
@@ -23,12 +25,21 @@ final class GetUserHistoryRequestHandler implements RequestHandler
      */
     protected function handle(GetUserHistoryRequest $request, Pbjx $pbjx): GetUserHistoryResponse
     {
-        $slice = $pbjx->getEventStore()->getStreamSlice(
-            $request->get('stream_id'),
-            $request->get('since'),
-            $request->get('count'),
-            $request->get('forward')
-        );
+        /** @var StreamId $streamId */
+        $streamId = $request->get('stream_id');
+
+        // if someone is getting "creative" and trying to pull a different stream
+        // then we'll just return an empty slice.  no soup for you.
+        if ('user.history' === $streamId->getTopic()) {
+            $slice = $pbjx->getEventStore()->getStreamSlice(
+                $streamId,
+                $request->get('since'),
+                $request->get('count'),
+                $request->get('forward')
+            );
+        } else {
+            $slice = new StreamSlice([], $streamId, $request->get('forward'));
+        }
 
         $schema = GetUserHistoryResponseV1Mixin::findOne();
         /** @var GetUserHistoryResponse $response */

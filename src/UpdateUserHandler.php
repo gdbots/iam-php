@@ -35,9 +35,7 @@ final class UpdateUserHandler implements CommandHandler
 
         if ($command->has('old_node')) {
             $oldNode = $command->get('old_node');
-            $event
-                ->set('old_node', $oldNode)
-                ->set('old_etag', $oldNode->get('etag'));
+            $event->set('old_node', $oldNode);
 
             $newNode
                 // status SHOULD NOT change during an update, use the appropriate
@@ -71,11 +69,9 @@ final class UpdateUserHandler implements CommandHandler
             $newNode->set('status', NodeStatus::PUBLISHED());
         }
 
-        $newNode->set('etag', $newNode->generateEtag(['etag', 'updated_at']));
         $event
             ->set('node_ref', $command->get('node_ref'))
-            ->set('new_node', $newNode)
-            ->set('new_etag', $newNode->get('etag'));
+            ->set('new_node', $newNode);
 
         $streamId = StreamId::fromString(sprintf('user.history:%s', $newNode->get('_id')));
         $pbjx->getEventStore()->putEvents($streamId, [$event]);

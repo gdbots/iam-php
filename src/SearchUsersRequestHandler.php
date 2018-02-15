@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace Gdbots\Iam;
 
 use Gdbots\Ncr\NcrSearch;
-use Gdbots\Pbj\SchemaQName;
 use Gdbots\Pbjx\RequestHandler;
 use Gdbots\Pbjx\RequestHandlerTrait;
 use Gdbots\QueryParser\Enum\BoolOperator;
@@ -16,6 +15,7 @@ use Gdbots\Schemas\Iam\Mixin\SearchUsersRequest\SearchUsersRequest;
 use Gdbots\Schemas\Iam\Mixin\SearchUsersRequest\SearchUsersRequestV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\SearchUsersResponse\SearchUsersResponse;
 use Gdbots\Schemas\Iam\Mixin\SearchUsersResponse\SearchUsersResponseV1Mixin;
+use Gdbots\Schemas\Iam\Mixin\User\UserV1Mixin;
 use Gdbots\Schemas\Ncr\Enum\NodeStatus;
 use Gdbots\Schemas\Ncr\Mixin\SearchNodesRequest\SearchNodesRequest;
 
@@ -45,12 +45,23 @@ final class SearchUsersRequestHandler implements RequestHandler
         /** @var SearchUsersResponse $response */
         $response = $schema->createMessage();
 
-        $parsedQuery = ParsedQuery::fromArray(json_decode($request->get('parsed_query_json', '{}'), true));
+        $parsedQuery = ParsedQuery::fromArray(json_decode(
+            $request->get('parsed_query_json', '{}'),
+            true
+        ));
+
         $required = BoolOperator::REQUIRED();
         $prohibited = BoolOperator::PROHIBITED();
 
-        if (!$request->has('status') && !$request->isInSet('fields_used', 'status')) {
-            $parsedQuery->addNode(new Field('status', new Word(NodeStatus::DELETED, $prohibited), $prohibited));
+        // if status is not specified in some way, default to not
+        // showing any deleted nodes.
+        if (!$request->has('status')
+            && !$request->has('statuses')
+            && !$request->isInSet('fields_used', 'status')
+        ) {
+            $parsedQuery->addNode(
+                new Field('status', new Word(NodeStatus::DELETED, $prohibited), $prohibited)
+            );
         }
 
         foreach (['is_staff', 'is_blocked'] as $trinary) {
@@ -70,7 +81,7 @@ final class SearchUsersRequestHandler implements RequestHandler
             $request,
             $parsedQuery,
             $response,
-            [SchemaQName::fromString("{$response::schema()->getId()->getVendor()}:user")]
+            [UserV1Mixin::findOne()->getQName()]
         );
 
         return $response;

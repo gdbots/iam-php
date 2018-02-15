@@ -30,7 +30,10 @@ final class UniqueUserValidatorTest extends AbstractPbjxTest
     public function testValidateCreateUserThatDoesNotExist(): void
     {
         $command = CreateUserV1::create();
-        $node = UserV1::fromArray(['_id' => '7afcc2f1-9654-46d1-8fc1-b0511df257db', 'email' => 'homer@simpson.com']);
+        $node = UserV1::fromArray([
+            '_id'   => '7afcc2f1-9654-46d1-8fc1-b0511df257db',
+            'email' => 'homer@simpson.com',
+        ]);
         $command->set('node', $node);
 
         $validator = new UniqueUserValidator();
@@ -47,8 +50,15 @@ final class UniqueUserValidatorTest extends AbstractPbjxTest
     public function testValidateCreateUserThatDoesExistByEmail(): void
     {
         $command = CreateUserV1::create();
-        $existingNode = UserV1::fromArray(['_id' => '7afcc2f1-9654-46d1-8fc1-b0511df257db', 'email' => 'homer@simpson.com']);
-        $newNode = UserV1::fromArray(['_id' => '8466a862-2a53-43a4-ade2-25b63e0cab94', 'email' => 'homer@simpson.com']);
+        $existingNode = UserV1::fromArray([
+            '_id'    => '7afcc2f1-9654-46d1-8fc1-b0511df257db',
+            'email'  => 'homer@simpson.com',
+            'status' => 'published',
+        ]);
+        $newNode = UserV1::fromArray([
+            '_id'   => '8466a862-2a53-43a4-ade2-25b63e0cab94',
+            'email' => 'homer@simpson.com',
+        ]);
         $this->ncr->putNode($existingNode);
         $command->set('node', $newNode);
 
@@ -64,7 +74,10 @@ final class UniqueUserValidatorTest extends AbstractPbjxTest
     {
         $command = CreateUserV1::create();
         $event = UserCreatedV1::create();
-        $node = UserV1::fromArray(['_id' => '7afcc2f1-9654-46d1-8fc1-b0511df257db', 'email' => 'homer@simpson.com']);
+        $node = UserV1::fromArray([
+            '_id'   => '7afcc2f1-9654-46d1-8fc1-b0511df257db',
+            'email' => 'homer@simpson.com',
+        ]);
         $command->set('node', $node);
         $event->set('node', $node);
         $this->eventStore->putEvents(StreamId::fromString("user.history:{$node->get('_id')}"), [$event]);

@@ -16,7 +16,7 @@ use Gdbots\Schemas\Ncr\Enum\NodeStatus;
 use Gdbots\Schemas\Ncr\Mixin\Node\Node;
 use Gdbots\Schemas\Pbjx\Mixin\Event\Event;
 
-class UserProjector implements PbjxProjector
+class NcrUserProjector implements PbjxProjector
 {
     use EventSubscriberTrait;
 
@@ -49,19 +49,6 @@ class UserProjector implements PbjxProjector
     }
 
     /**
-     * @param UserUpdated $event
-     */
-    public function onUserUpdated(UserUpdated $event): void
-    {
-        $newNode = $event->get('new_node');
-        $expectedEtag = $event->isReplay() ? null : $event->get('old_etag');
-        $this->ncr->putNode($newNode, $expectedEtag);
-        if (!$event->isReplay()) {
-            $this->ncrSearch->indexNodes([$newNode]);
-        }
-    }
-
-    /**
      * @param UserDeleted $event
      */
     public function onUserDeleted(UserDeleted $event): void
@@ -90,6 +77,19 @@ class UserProjector implements PbjxProjector
         $node = $this->ncr->getNode($event->get('node_ref'), true);
         $node->removeFromSet('roles', $event->get('roles', []));
         $this->putNode($node, $event);
+    }
+
+    /**
+     * @param UserUpdated $event
+     */
+    public function onUserUpdated(UserUpdated $event): void
+    {
+        $newNode = $event->get('new_node');
+        $expectedEtag = $event->isReplay() ? null : $event->get('old_etag');
+        $this->ncr->putNode($newNode, $expectedEtag);
+        if (!$event->isReplay()) {
+            $this->ncrSearch->indexNodes([$newNode]);
+        }
     }
 
     /**

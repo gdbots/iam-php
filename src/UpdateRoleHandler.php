@@ -38,9 +38,7 @@ final class UpdateRoleHandler implements CommandHandler
 
         if ($command->has('old_node')) {
             $oldNode = $command->get('old_node');
-            $event
-                ->set('old_node', $oldNode)
-                ->set('old_etag', $oldNode->get('etag'));
+            $event->set('old_node', $oldNode);
 
             $newNode
                 // created_at and creator_ref MUST NOT change
@@ -48,11 +46,9 @@ final class UpdateRoleHandler implements CommandHandler
                 ->set('creator_ref', $oldNode->get('creator_ref'));
         }
 
-        $newNode->set('etag', $newNode->generateEtag(['etag', 'updated_at']));
         $event
             ->set('node_ref', $command->get('node_ref'))
-            ->set('new_node', $newNode)
-            ->set('new_etag', $newNode->get('etag'));
+            ->set('new_node', $newNode);
 
         $streamId = StreamId::fromString(sprintf('role.history:%s', $newNode->get('_id')));
         $pbjx->getEventStore()->putEvents($streamId, [$event]);
