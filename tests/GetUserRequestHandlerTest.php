@@ -14,7 +14,10 @@ final class GetUserRequestHandlerTest extends AbstractPbjxTest
 {
     public function testGetByNodeRefThatExists()
     {
-        $node = UserV1::fromArray(['_id' => '7afcc2f1-9654-46d1-8fc1-b0511df257db']);
+        $node = UserV1::fromArray([
+            '_id'    => '7afcc2f1-9654-46d1-8fc1-b0511df257db',
+            'status' => 'published',
+        ]);
         $nodeRef = NodeRef::fromNode($node);
         $this->ncr->putNode($node);
 
@@ -49,7 +52,11 @@ final class GetUserRequestHandlerTest extends AbstractPbjxTest
 
     public function testGetByEmailThatExists()
     {
-        $node = UserV1::fromArray(['_id' => '7afcc2f1-9654-46d1-8fc1-b0511df257db', 'email' => 'homer@simpson.com']);
+        $node = UserV1::fromArray([
+            '_id'    => '7afcc2f1-9654-46d1-8fc1-b0511df257db',
+            'email'  => 'homer@simpson.com',
+            'status' => 'published',
+        ]);
         $nodeRef = NodeRef::fromNode($node);
         $email = $node->get('email');
         $this->ncr->putNode($node);

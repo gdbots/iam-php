@@ -12,7 +12,7 @@ use Gdbots\Schemas\Iam\Mixin\RoleUpdated\RoleUpdated;
 use Gdbots\Schemas\Ncr\Mixin\Node\Node;
 use Gdbots\Schemas\Pbjx\Mixin\Event\Event;
 
-class RoleProjector implements PbjxProjector
+class NcrRoleProjector implements PbjxProjector
 {
     use EventSubscriberTrait;
 
@@ -37,6 +37,14 @@ class RoleProjector implements PbjxProjector
     }
 
     /**
+     * @param RoleDeleted $event
+     */
+    public function onRoleDeleted(RoleDeleted $event): void
+    {
+        $this->ncr->deleteNode($event->get('node_ref'));
+    }
+
+    /**
      * @param RoleUpdated $event
      */
     public function onRoleUpdated(RoleUpdated $event): void
@@ -44,14 +52,6 @@ class RoleProjector implements PbjxProjector
         $newNode = $event->get('new_node');
         $expectedEtag = $event->isReplay() ? null : $event->get('old_etag');
         $this->ncr->putNode($newNode, $expectedEtag);
-    }
-
-    /**
-     * @param RoleDeleted $event
-     */
-    public function onRoleDeleted(RoleDeleted $event): void
-    {
-        $this->ncr->deleteNode($event->get('node_ref'));
     }
 
     /**

@@ -10,7 +10,7 @@ use Acme\Schemas\Iam\Event\UserRolesRevokedV1;
 use Acme\Schemas\Iam\Event\UserUpdatedV1;
 use Acme\Schemas\Iam\Node\RoleV1;
 use Acme\Schemas\Iam\Node\UserV1;
-use Gdbots\Iam\UserProjector;
+use Gdbots\Iam\NcrUserProjector;
 use Gdbots\Ncr\NcrSearch;
 use Gdbots\Schemas\Iam\RoleId;
 use Gdbots\Schemas\Ncr\Enum\NodeStatus;
@@ -18,7 +18,7 @@ use Gdbots\Schemas\Ncr\NodeRef;
 
 final class UserProjectorTest extends AbstractPbjxTest
 {
-    /** @var UserProjector */
+    /** @var NcrUserProjector */
     protected $userProjector;
 
     /** @var NcrSearch|\PHPUnit_Framework_MockObject_MockObject */
@@ -28,7 +28,7 @@ final class UserProjectorTest extends AbstractPbjxTest
     {
         parent::setup();
         $this->ncrSearch = $this->getMockBuilder(MockNcrSearch::class)->getMock();
-        $this->userProjector = new UserProjector($this->ncr, $this->ncrSearch);
+        $this->userProjector = new NcrUserProjector($this->ncr, $this->ncrSearch);
     }
 
     public function tearDown()

@@ -18,7 +18,6 @@ final class CreateRoleHandler implements CommandHandler
     use CommandHandlerTrait;
 
     /**
-     *
      * @param CreateRole $command
      * @param Pbjx       $pbjx
      */
@@ -38,9 +37,7 @@ final class CreateRoleHandler implements CommandHandler
             ->set('last_event_ref', $event->generateMessageRef())
             ->set('title', (string)$node->get('_id'));
 
-        $node->set('etag', $node->generateEtag(['etag', 'updated_at']));
         $event->set('node', $node);
-
         $streamId = StreamId::fromString(sprintf('role.history:%s', $node->get('_id')));
         $pbjx->getEventStore()->putEvents($streamId, [$event]);
     }

@@ -7,20 +7,20 @@ use Acme\Schemas\Iam\Event\RoleCreatedV1;
 use Acme\Schemas\Iam\Event\RoleDeletedV1;
 use Acme\Schemas\Iam\Event\RoleUpdatedV1;
 use Acme\Schemas\Iam\Node\RoleV1;
-use Gdbots\Iam\RoleProjector;
+use Gdbots\Iam\NcrRoleProjector;
 use Gdbots\Schemas\Iam\RoleId;
 use Gdbots\Schemas\Ncr\NodeRef;
 
 final class RoleProjectorTest extends AbstractPbjxTest
 {
-    /** @var RoleProjector */
+    /** @var NcrRoleProjector */
     protected $roleProjecter;
 
     public function setup()
     {
         parent::setup();
 
-        $this->roleProjecter = new RoleProjector($this->ncr);
+        $this->roleProjecter = new NcrRoleProjector($this->ncr);
     }
 
     public function tearDown()

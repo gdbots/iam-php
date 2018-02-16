@@ -18,7 +18,7 @@ final class CreateUserHandler implements CommandHandler
     use CommandHandlerTrait;
 
     /**
-     * fixme: validate that _id was safely set by server
+     * fixme: validate that _id was safely set by server?
      *
      * @param CreateUser $command
      * @param Pbjx       $pbjx
@@ -50,9 +50,7 @@ final class CreateUserHandler implements CommandHandler
             $node->set('title', trim($node->get('first_name') . ' ' . $node->get('last_name')));
         }
 
-        $node->set('etag', $node->generateEtag(['etag', 'updated_at']));
         $event->set('node', $node);
-
         $streamId = StreamId::fromString(sprintf('user.history:%s', $node->get('_id')));
         $pbjx->getEventStore()->putEvents($streamId, [$event]);
     }
