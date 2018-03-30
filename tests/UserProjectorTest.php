@@ -45,7 +45,7 @@ final class UserProjectorTest extends AbstractPbjxTest
 
         $this->ncrSearch->expects($this->once())->method('indexNodes');
 
-        $this->userProjector->onUserCreated($event);
+        $this->userProjector->onUserCreated($event, $this->pbjx);
         $getUser = $this->ncr->getNode($nodeRef);
 
         $this->assertTrue($user->equals($getUser));
@@ -60,7 +60,7 @@ final class UserProjectorTest extends AbstractPbjxTest
 
         $this->ncrSearch->expects($this->never())->method('indexNodes');
 
-        $this->userProjector->onUserCreated($event);
+        $this->userProjector->onUserCreated($event, $this->pbjx);
         $getUser = $this->ncr->getNode($nodeRef);
 
         $this->assertTrue($user->equals($getUser));
@@ -87,7 +87,7 @@ final class UserProjectorTest extends AbstractPbjxTest
 
         $this->ncrSearch->expects($this->once())->method('indexNodes');
 
-        $this->userProjector->onUserUpdated($event);
+        $this->userProjector->onUserUpdated($event, $this->pbjx);
         $getUser = $this->ncr->getNode($nodeRef);
 
         $this->assertEquals($newUser->get('title'), $getUser->get('title'));
@@ -117,7 +117,7 @@ final class UserProjectorTest extends AbstractPbjxTest
 
         $this->ncrSearch->expects($this->never())->method('indexNodes');
 
-        $this->userProjector->onUserUpdated($event);
+        $this->userProjector->onUserUpdated($event, $this->pbjx);
         $getUser = $this->ncr->getNode($nodeRef);
 
         $this->assertEquals($newUser->get('title'), $getUser->get('title'));
@@ -135,7 +135,7 @@ final class UserProjectorTest extends AbstractPbjxTest
 
         $event = UserDeletedV1::create()->set('node_ref', $nodeRef);
 
-        $this->userProjector->onUserDeleted($event);
+        $this->userProjector->onUserDeleted($event, $this->pbjx);
 
         $deleteduser = $this->ncr->getNode($nodeRef);
         $this->assertEquals(NodeStatus::DELETED(), $deleteduser->get('status'));
@@ -148,7 +148,7 @@ final class UserProjectorTest extends AbstractPbjxTest
     {
         $event = UserDeletedV1::create()->set('node_ref', NodeRef::fromString('acme:user:7afcc2f1-9654-46d1-8fc1-b0511df257db'));
 
-        $this->userProjector->onUserDeleted($event);
+        $this->userProjector->onUserDeleted($event, $this->pbjx);
     }
 
     /**
@@ -166,7 +166,7 @@ final class UserProjectorTest extends AbstractPbjxTest
             ->set('node_ref', $nodeRef)
             ->addToSet('roles', [NodeRef::fromNode($role)]);
 
-        $this->userProjector->onUserRolesGranted($event);
+        $this->userProjector->onUserRolesGranted($event, $this->pbjx);
 
         $user = $this->ncr->getNode($nodeRef);
 
@@ -185,7 +185,7 @@ final class UserProjectorTest extends AbstractPbjxTest
             ->set('node_ref', NodeRef::fromString('acme:user:7afcc2f1-9654-46d1-8fc1-b0511df257db'))
             ->addToSet('roles', [NodeRef::fromNode($role)]);
 
-        $this->userProjector->onUserRolesGranted($event);
+        $this->userProjector->onUserRolesGranted($event, $this->pbjx);
     }
 
     /**
@@ -212,7 +212,7 @@ final class UserProjectorTest extends AbstractPbjxTest
             ->set('node_ref', $nodeRef)
             ->addToSet('roles', [NodeRef::fromNode($superRole)]);
 
-        $this->userProjector->onUserRolesRevoked($event);
+        $this->userProjector->onUserRolesRevoked($event, $this->pbjx);
         $updatedUser = $this->ncr->getNode($nodeRef);
         $updatedUserRoles = array_flip(array_map('strval', $updatedUser->get('roles')));
 
@@ -232,7 +232,7 @@ final class UserProjectorTest extends AbstractPbjxTest
             ->set('node_ref', NodeRef::fromString('acme:user:7afcc2f1-9654-46d1-8fc1-b0511df257db'))
             ->addToSet('roles', [NodeRef::fromNode($role)]);
 
-        $this->userProjector->onUserRolesRevoked($event);
+        $this->userProjector->onUserRolesRevoked($event, $this->pbjx);
     }
 
     /**

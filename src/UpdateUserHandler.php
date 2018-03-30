@@ -3,54 +3,55 @@ declare(strict_types=1);
 
 namespace Gdbots\Iam;
 
-use Gdbots\Pbjx\CommandHandler;
-use Gdbots\Pbjx\CommandHandlerTrait;
+use Gdbots\Ncr\AbstractUpdateNodeHandler;
 use Gdbots\Pbjx\Pbjx;
-use Gdbots\Schemas\Iam\Mixin\UpdateUser\UpdateUser;
 use Gdbots\Schemas\Iam\Mixin\UpdateUser\UpdateUserV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\User\User;
 use Gdbots\Schemas\Iam\Mixin\UserUpdated\UserUpdatedV1Mixin;
 use Gdbots\Schemas\Ncr\Enum\NodeStatus;
-use Gdbots\Schemas\Pbjx\StreamId;
+use Gdbots\Schemas\Ncr\Mixin\Node\Node;
+use Gdbots\Schemas\Ncr\Mixin\NodeUpdated\NodeUpdated;
+use Gdbots\Schemas\Ncr\Mixin\UpdateNode\UpdateNode;
 
-final class UpdateUserHandler implements CommandHandler
+class UpdateUserHandler extends AbstractUpdateNodeHandler
 {
-    use CommandHandlerTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected function isNodeSupported(Node $node): bool
+    {
+        return $node instanceof User;
+    }
 
     /**
-     * @param UpdateUser $command
-     * @param Pbjx       $pbjx
+     * {@inheritdoc}
      */
-    protected function handle(UpdateUser $command, Pbjx $pbjx): void
+    protected function createNodeUpdated(UpdateNode $command, Pbjx $pbjx): NodeUpdated
     {
+        /** @var NodeUpdated $event */
         $event = UserUpdatedV1Mixin::findOne()->createMessage();
-        $pbjx->copyContext($command, $event);
+        return $event;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function beforePutEvents(NodeUpdated $event, UpdateNode $command, Pbjx $pbjx): void
+    {
+        parent::beforePutEvents($event, $command, $pbjx);
+
+        /** @var User $oldNode */
+        $oldNode = $event->get('old_node');
 
         /** @var User $newNode */
-        $newNode = clone $command->get('new_node');
+        $newNode = $event->get('new_node');
         $newNode
-            ->set('updated_at', $event->get('occurred_at'))
-            ->set('updater_ref', $event->get('ctx_user_ref'))
-            ->set('last_event_ref', $event->generateMessageRef());
-
-        if ($command->has('old_node')) {
-            $oldNode = $command->get('old_node');
-            $event->set('old_node', $oldNode);
-
-            $newNode
-                // status SHOULD NOT change during an update, use the appropriate
-                // command to change a status (delete, publish, etc.)
-                ->set('status', $oldNode->get('status'))
-                // created_at and creator_ref MUST NOT change
-                ->set('created_at', $oldNode->get('created_at'))
-                ->set('creator_ref', $oldNode->get('creator_ref'))
-                // email SHOULD NOT change during an update, use "change-email"
-                ->set('email', $oldNode->get('email'))
-                ->set('email_domain', $oldNode->get('email_domain'))
-                // roles cannot change during an update
-                ->clear('roles')
-                ->addToSet('roles', $oldNode->get('roles', []));
-        }
+            // email SHOULD NOT change during an update, use "change-email"
+            ->set('email', $oldNode->get('email'))
+            ->set('email_domain', $oldNode->get('email_domain'))
+            // roles SHOULD NOT change during an update
+            ->clear('roles')
+            ->addToSet('roles', $oldNode->get('roles', []));
 
         if ($newNode->has('email')) {
             $email = strtolower($newNode->get('email'));
@@ -68,13 +69,6 @@ final class UpdateUserHandler implements CommandHandler
         if (!NodeStatus::DELETED()->equals($newNode->get('status'))) {
             $newNode->set('status', NodeStatus::PUBLISHED());
         }
-
-        $event
-            ->set('node_ref', $command->get('node_ref'))
-            ->set('new_node', $newNode);
-
-        $streamId = StreamId::fromString(sprintf('user.history:%s', $newNode->get('_id')));
-        $pbjx->getEventStore()->putEvents($streamId, [$event]);
     }
 
     /**

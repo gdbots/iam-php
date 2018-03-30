@@ -3,70 +3,57 @@ declare(strict_types=1);
 
 namespace Gdbots\Iam;
 
-use Gdbots\Ncr\Ncr;
-use Gdbots\Pbjx\DependencyInjection\PbjxProjector;
+use Gdbots\Ncr\AbstractNodeProjector;
+use Gdbots\Pbjx\EventSubscriber;
 use Gdbots\Pbjx\EventSubscriberTrait;
+use Gdbots\Pbjx\Pbjx;
 use Gdbots\Schemas\Iam\Mixin\RoleCreated\RoleCreated;
+use Gdbots\Schemas\Iam\Mixin\RoleCreated\RoleCreatedV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\RoleDeleted\RoleDeleted;
 use Gdbots\Schemas\Iam\Mixin\RoleUpdated\RoleUpdated;
-use Gdbots\Schemas\Ncr\Mixin\Node\Node;
-use Gdbots\Schemas\Pbjx\Mixin\Event\Event;
 
-class NcrRoleProjector implements PbjxProjector
+class NcrRoleProjector extends AbstractNodeProjector implements EventSubscriber
 {
     use EventSubscriberTrait;
 
-    /** @var Ncr */
-    protected $ncr;
+    /** @var bool */
+    protected $useSoftDelete = false;
 
     /**
-     * @param Ncr $ncr
+     * {@inheritdoc}
      */
-    public function __construct(Ncr $ncr)
+    public static function getSubscribedEvents()
     {
-        $this->ncr = $ncr;
+        $curie = RoleCreatedV1Mixin::findOne()->getCurie();
+        return [
+            "{$curie->getVendor()}:{$curie->getPackage()}:{$curie->getCategory()}:*" => 'onEvent',
+        ];
     }
 
     /**
      * @param RoleCreated $event
+     * @param Pbjx        $pbjx
      */
-    public function onRoleCreated(RoleCreated $event): void
+    public function onRoleCreated(RoleCreated $event, Pbjx $pbjx): void
     {
-        $node = $event->get('node');
-        $this->ncr->putNode($node);
+        $this->handleNodeCreated($event, $pbjx);
     }
 
     /**
      * @param RoleDeleted $event
+     * @param Pbjx        $pbjx
      */
-    public function onRoleDeleted(RoleDeleted $event): void
+    public function onRoleDeleted(RoleDeleted $event, Pbjx $pbjx): void
     {
-        $this->ncr->deleteNode($event->get('node_ref'));
+        $this->handleNodeDeleted($event, $pbjx);
     }
 
     /**
      * @param RoleUpdated $event
+     * @param Pbjx        $pbjx
      */
-    public function onRoleUpdated(RoleUpdated $event): void
+    public function onRoleUpdated(RoleUpdated $event, Pbjx $pbjx): void
     {
-        $newNode = $event->get('new_node');
-        $expectedEtag = $event->isReplay() ? null : $event->get('old_etag');
-        $this->ncr->putNode($newNode, $expectedEtag);
-    }
-
-    /**
-     * @param Node  $node
-     * @param Event $event
-     */
-    protected function putNode(Node $node, Event $event): void
-    {
-        $expectedEtag = $node->get('etag');
-        $node
-            ->set('updated_at', $event->get('occurred_at'))
-            ->set('updater_ref', $event->get('ctx_user_ref'))
-            ->set('last_event_ref', $event->generateMessageRef())
-            ->set('etag', $node->generateEtag(['etag', 'updated_at']));
-
-        $this->ncr->putNode($node, $expectedEtag);
+        $this->handleNodeUpdated($event, $pbjx);
     }
 }

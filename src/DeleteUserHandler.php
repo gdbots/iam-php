@@ -3,40 +3,33 @@ declare(strict_types=1);
 
 namespace Gdbots\Iam;
 
-use Gdbots\Iam\Exception\InvalidArgumentException;
-use Gdbots\Pbjx\CommandHandler;
-use Gdbots\Pbjx\CommandHandlerTrait;
+use Gdbots\Ncr\AbstractDeleteNodeHandler;
 use Gdbots\Pbjx\Pbjx;
-use Gdbots\Schemas\Iam\Mixin\DeleteUser\DeleteUser;
 use Gdbots\Schemas\Iam\Mixin\DeleteUser\DeleteUserV1Mixin;
-use Gdbots\Schemas\Iam\Mixin\User\UserV1Mixin;
+use Gdbots\Schemas\Iam\Mixin\User\User;
 use Gdbots\Schemas\Iam\Mixin\UserDeleted\UserDeletedV1Mixin;
-use Gdbots\Schemas\Ncr\NodeRef;
-use Gdbots\Schemas\Pbjx\StreamId;
+use Gdbots\Schemas\Ncr\Mixin\DeleteNode\DeleteNode;
+use Gdbots\Schemas\Ncr\Mixin\Node\Node;
+use Gdbots\Schemas\Ncr\Mixin\NodeDeleted\NodeDeleted;
 
-final class DeleteUserHandler implements CommandHandler
+class DeleteUserHandler extends AbstractDeleteNodeHandler
 {
-    use CommandHandlerTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected function isNodeSupported(Node $node): bool
+    {
+        return $node instanceof User;
+    }
 
     /**
-     * @param DeleteUser $command
-     * @param Pbjx       $pbjx
+     * {@inheritdoc}
      */
-    protected function handle(DeleteUser $command, Pbjx $pbjx): void
+    protected function createNodeDeleted(DeleteNode $command, Pbjx $pbjx): NodeDeleted
     {
-        /** @var NodeRef $nodeRef */
-        $nodeRef = $command->get('node_ref');
-
-        if ($nodeRef->getQName() !== UserV1Mixin::findOne()->getQName()) {
-            throw new InvalidArgumentException("Expected a user, got {$nodeRef}.");
-        }
-
+        /** @var NodeDeleted $event */
         $event = UserDeletedV1Mixin::findOne()->createMessage();
-        $event = $event->set('node_ref', $nodeRef);
-        $pbjx->copyContext($command, $event);
-
-        $streamId = StreamId::fromString(sprintf('user.history:%s', $nodeRef->getId()));
-        $pbjx->getEventStore()->putEvents($streamId, [$event]);
+        return $event;
     }
 
     /**

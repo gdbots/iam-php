@@ -5,7 +5,7 @@ iam-php
 [![Code Climate](https://codeclimate.com/github/gdbots/iam-php/badges/gpa.svg)](https://codeclimate.com/github/gdbots/iam-php)
 [![Test Coverage](https://codeclimate.com/github/gdbots/iam-php/badges/coverage.svg)](https://codeclimate.com/github/gdbots/iam-php/coverage)
 
-Php library that provides implementations for __gdbots:iam__ schemas.   Using this library assumes that you've already created and compiled your own pbj classes using the [Pbjc](https://github.com/gdbots/pbjc-php) and are making use of the __"gdbots:iam:mixin:*"__ mixins from [gdbots/schemas](https://github.com/gdbots/schemas).
+Php library that provides implementations for __gdbots:iam__ schemas.  Using this library assumes that you've already created and compiled your own pbj classes using the [Pbjc](https://github.com/gdbots/pbjc-php) and are making use of the __"gdbots:iam:mixin:*"__ mixins from [gdbots/schemas](https://github.com/gdbots/schemas).
 
 
 ## Symfony Integration
@@ -23,13 +23,6 @@ services:
   Gdbots\Iam\:
     resource: '%kernel.project_dir%/vendor/gdbots/iam/src/**/*'
 
-  Gdbots\Iam\NcrRoleProjector:
-    tags:
-      - {name: pbjx.event_listener, event: '%app_vendor%:iam:event:*', method: onEvent}
-
-  Gdbots\Iam\NcrUserProjector:
-    tags:
-      - {name: pbjx.event_listener, event: '%app_vendor%:iam:event:*', method: onEvent}
 ```
 
 The above services do __NOT__ handle security though, to get that we need deeper integration with Symfony which is provided by the [gdbots/iam-bundle-php](https://github.com/gdbots/iam-bundle-php).

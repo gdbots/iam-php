@@ -2,6 +2,10 @@
 This changelog references the relevant changes done in 0.x versions.
 
 
+## v0.3.0
+* Require `"gdbots/ncr": "^0.2.4 || ~0.3"` and refactor all handlers and projector to use abstract classes provided by gdbots/ncr.
+
+
 ## v0.2.1
 * Add check in command handlers to ensure the node is really a proper node (user/role).
 * Remove setting of `etag` in `CreateRoleHandler` and `UpdateRoleHandler` as that is now handled in gdbots/ncr.

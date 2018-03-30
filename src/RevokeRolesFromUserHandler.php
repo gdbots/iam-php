@@ -3,21 +3,30 @@ declare(strict_types=1);
 
 namespace Gdbots\Iam;
 
-use Gdbots\Iam\Exception\InvalidArgumentException;
-use Gdbots\Pbjx\CommandHandler;
-use Gdbots\Pbjx\CommandHandlerTrait;
+use Gdbots\Ncr\AbstractNodeCommandHandler;
+use Gdbots\Ncr\Ncr;
 use Gdbots\Pbjx\Pbjx;
 use Gdbots\Schemas\Iam\Mixin\RevokeRolesFromUser\RevokeRolesFromUser;
 use Gdbots\Schemas\Iam\Mixin\RevokeRolesFromUser\RevokeRolesFromUserV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\Role\RoleV1Mixin;
-use Gdbots\Schemas\Iam\Mixin\User\UserV1Mixin;
+use Gdbots\Schemas\Iam\Mixin\User\User;
+use Gdbots\Schemas\Iam\Mixin\UserRolesRevoked\UserRolesRevoked;
 use Gdbots\Schemas\Iam\Mixin\UserRolesRevoked\UserRolesRevokedV1Mixin;
+use Gdbots\Schemas\Ncr\Mixin\Node\Node;
 use Gdbots\Schemas\Ncr\NodeRef;
-use Gdbots\Schemas\Pbjx\StreamId;
 
-final class RevokeRolesFromUserHandler implements CommandHandler
+class RevokeRolesFromUserHandler extends AbstractNodeCommandHandler
 {
-    use CommandHandlerTrait;
+    /** @var Ncr */
+    protected $ncr;
+
+    /**
+     * @param Ncr $ncr
+     */
+    public function __construct(Ncr $ncr)
+    {
+        $this->ncr = $ncr;
+    }
 
     /**
      * @param RevokeRolesFromUser $command
@@ -27,14 +36,12 @@ final class RevokeRolesFromUserHandler implements CommandHandler
     {
         /** @var NodeRef $nodeRef */
         $nodeRef = $command->get('node_ref');
+        $node = $this->ncr->getNode($nodeRef, true, $this->createNcrContext($command));
+        $this->assertIsNodeSupported($node);
 
-        if ($nodeRef->getQName() !== UserV1Mixin::findOne()->getQName()) {
-            throw new InvalidArgumentException("Expected a user, got {$nodeRef}.");
-        }
-
-        $event = UserRolesRevokedV1Mixin::findOne()->createMessage();
-        $event = $event->set('node_ref', $nodeRef);
+        $event = $this->createUserRolesRevoked($command, $pbjx);
         $pbjx->copyContext($command, $event);
+        $event->set('node_ref', $nodeRef);
 
         $roles = [];
         $roleQname = RoleV1Mixin::findOne()->getQName();
@@ -47,8 +54,29 @@ final class RevokeRolesFromUserHandler implements CommandHandler
 
         $event->addToSet('roles', $roles);
 
-        $streamId = StreamId::fromString(sprintf('user.history:%s', $nodeRef->getId()));
-        $pbjx->getEventStore()->putEvents($streamId, [$event]);
+        $this->bindFromNode($event, $node, $pbjx);
+        $this->putEvents($command, $pbjx, $this->createStreamId($nodeRef, $command, $event), [$event]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function isNodeSupported(Node $node): bool
+    {
+        return $node instanceof User;
+    }
+
+    /**
+     * @param RevokeRolesFromUser $command
+     * @param Pbjx                $pbjx
+     *
+     * @return UserRolesRevoked
+     */
+    protected function createUserRolesRevoked(RevokeRolesFromUser $command, Pbjx $pbjx): UserRolesRevoked
+    {
+        /** @var UserRolesRevoked $event */
+        $event = UserRolesRevokedV1Mixin::findOne()->createMessage();
+        return $event;
     }
 
     /**
