@@ -5,6 +5,7 @@ namespace Gdbots\Tests\Iam;
 
 use Acme\Schemas\Iam\Command\DeleteUserV1;
 use Acme\Schemas\Iam\Event\UserDeletedV1;
+use Acme\Schemas\Iam\Node\UserV1;
 use Gdbots\Iam\DeleteUserHandler;
 use Gdbots\Schemas\Ncr\NodeRef;
 use Gdbots\Schemas\Pbjx\Mixin\Event\Event;
@@ -14,14 +15,17 @@ final class DeleteUserHandlerTest extends AbstractPbjxTest
 {
     public function testHandleCommand()
     {
-        $nodeRef = NodeRef::fromString('acme:user:8695f644-0e7f-11e7-93ae-92361f002671');
+        $node = UserV1::fromArray(['_id' => '8695f644-0e7f-11e7-93ae-92361f002671']);
+        $this->ncr->putNode($node);
+        $nodeRef = NodeRef::fromNode($node);
+
         $command = DeleteUserV1::create();
         $command->set('node_ref', $nodeRef);
 
         $expectedEvent = UserDeletedV1::create();
         $expectedId = $nodeRef->getId();
 
-        $handler = new DeleteUserHandler();
+        $handler = new DeleteUserHandler($this->ncr);
         $handler->handleCommand($command, $this->pbjx);
 
         $this->eventStore->pipeAllEvents(function (Event $event, StreamId $streamId) use ($expectedEvent, $expectedId) {

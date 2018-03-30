@@ -9,6 +9,7 @@ use Acme\Schemas\Iam\Node\RoleV1;
 use Gdbots\Iam\UpdateRoleHandler;
 use Gdbots\Schemas\Iam\RoleId;
 use Gdbots\Schemas\Ncr\Enum\NodeStatus;
+use Gdbots\Schemas\Ncr\NodeRef;
 use Gdbots\Schemas\Pbjx\Mixin\Event\Event;
 use Gdbots\Schemas\Pbjx\StreamId;
 
@@ -23,16 +24,18 @@ final class UpdateRoleHandlerTest extends AbstractPbjxTest
             ->addToSet('allowed', ['acme:blog:command:*', 'acme:video:command:*'])
             ->addToSet('denied', ['acme:blog:command:publish-article'])
             ->set('status', NodeStatus::PUBLISHED());
+        $this->ncr->putNode($oldNode);
 
         $newNode = RoleV1::create()
             ->set('_id', RoleId::fromString('super-user'))
             ->addToSet('allowed', ['acme:video:command:*'])
             ->addToSet('denied', ['acme:blog:command:*']);
 
+        $command->set('node_ref', NodeRef::fromNode($oldNode));
         $command->set('old_node', $oldNode);
         $command->set('new_node', $newNode);
 
-        $handler = new UpdateRoleHandler();
+        $handler = new UpdateRoleHandler($this->ncr);
         $handler->handleCommand($command, $this->pbjx);
 
         $expectedEvent = RoleUpdatedV1::create();
@@ -57,14 +60,20 @@ final class UpdateRoleHandlerTest extends AbstractPbjxTest
     {
         $command = UpdateRoleV1::create();
 
+        $oldNode = RoleV1::create()
+            ->set('_id', RoleId::fromString('super-user'))
+            ->set('status', NodeStatus::PUBLISHED());
+        $this->ncr->putNode($oldNode);
+
         $newNode = RoleV1::create()
             ->set('_id', RoleId::fromString('super-user'))
             ->addToSet('allowed', ['acme:video:command:*'])
             ->addToSet('denied', ['acme:blog:command:*']);
 
+        $command->set('node_ref', NodeRef::fromNode($oldNode));
         $command->set('new_node', $newNode);
 
-        $handler = new UpdateRoleHandler();
+        $handler = new UpdateRoleHandler($this->ncr);
         $handler->handleCommand($command, $this->pbjx);
 
         $expectedEvent = RoleUpdatedV1::create();
@@ -72,7 +81,7 @@ final class UpdateRoleHandlerTest extends AbstractPbjxTest
 
         $this->eventStore->pipeAllEvents(function (Event $event, StreamId $streamId) use ($expectedEvent, $expectedId) {
             $this->assertSame($event::schema(), $expectedEvent::schema());
-            $this->assertFalse($event->has('old_node'));
+            $this->assertTrue($event->has('old_node'));
             $this->assertTrue($event->has('new_node'));
 
             $newNode = $event->get('new_node');
@@ -94,14 +103,16 @@ final class UpdateRoleHandlerTest extends AbstractPbjxTest
             ->addToSet('allowed', ['acme:blog:command:*', 'acme:video:command:*'])
             ->addToSet('denied', ['acme:blog:command:publish-article'])
             ->set('status', NodeStatus::PUBLISHED());
+        $this->ncr->putNode($oldNode);
 
         $newNode = RoleV1::create()
             ->set('_id', RoleId::fromString('super-user'));
 
+        $command->set('node_ref', NodeRef::fromNode($oldNode));
         $command->set('old_node', $oldNode);
         $command->set('new_node', $newNode);
 
-        $handler = new UpdateRoleHandler();
+        $handler = new UpdateRoleHandler($this->ncr);
         $handler->handleCommand($command, $this->pbjx);
 
         $expectedEvent = RoleUpdatedV1::create();

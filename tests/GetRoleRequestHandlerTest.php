@@ -31,7 +31,6 @@ final class GetRoleRequestHandlerTest extends AbstractPbjxTest
 
     /**
      * @expectedException \Gdbots\Ncr\Exception\NodeNotFound
-     * @expectedExceptionMessage No method available to find role.
      */
     public function testHandleNodeRefNotFound()
     {

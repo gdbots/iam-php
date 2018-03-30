@@ -3,43 +3,48 @@ declare(strict_types=1);
 
 namespace Gdbots\Iam;
 
-use Gdbots\Pbjx\CommandHandler;
-use Gdbots\Pbjx\CommandHandlerTrait;
+use Gdbots\Ncr\AbstractCreateNodeHandler;
 use Gdbots\Pbjx\Pbjx;
-use Gdbots\Schemas\Iam\Mixin\CreateRole\CreateRole;
 use Gdbots\Schemas\Iam\Mixin\CreateRole\CreateRoleV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\Role\Role;
 use Gdbots\Schemas\Iam\Mixin\RoleCreated\RoleCreatedV1Mixin;
 use Gdbots\Schemas\Ncr\Enum\NodeStatus;
-use Gdbots\Schemas\Pbjx\StreamId;
+use Gdbots\Schemas\Ncr\Mixin\CreateNode\CreateNode;
+use Gdbots\Schemas\Ncr\Mixin\Node\Node;
+use Gdbots\Schemas\Ncr\Mixin\NodeCreated\NodeCreated;
 
-final class CreateRoleHandler implements CommandHandler
+class CreateRoleHandler extends AbstractCreateNodeHandler
 {
-    use CommandHandlerTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected function isNodeSupported(Node $node): bool
+    {
+        return $node instanceof Role;
+    }
 
     /**
-     * @param CreateRole $command
-     * @param Pbjx       $pbjx
+     * {@inheritdoc}
      */
-    protected function handle(CreateRole $command, Pbjx $pbjx): void
+    protected function createNodeCreated(CreateNode $command, Pbjx $pbjx): NodeCreated
     {
+        /** @var NodeCreated $event */
         $event = RoleCreatedV1Mixin::findOne()->createMessage();
-        $pbjx->copyContext($command, $event);
+        return $event;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function beforePutEvents(NodeCreated $event, CreateNode $command, Pbjx $pbjx): void
+    {
+        parent::beforePutEvents($event, $command, $pbjx);
 
         /** @var Role $node */
-        $node = clone $command->get('node');
+        $node = $event->get('node');
         $node
-            ->clear('updated_at')
-            ->clear('updater_ref')
             ->set('status', NodeStatus::PUBLISHED())
-            ->set('created_at', $event->get('occurred_at'))
-            ->set('creator_ref', $event->get('ctx_user_ref'))
-            ->set('last_event_ref', $event->generateMessageRef())
             ->set('title', (string)$node->get('_id'));
-
-        $event->set('node', $node);
-        $streamId = StreamId::fromString(sprintf('role.history:%s', $node->get('_id')));
-        $pbjx->getEventStore()->putEvents($streamId, [$event]);
     }
 
     /**

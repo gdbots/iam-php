@@ -3,41 +3,49 @@ declare(strict_types=1);
 
 namespace Gdbots\Iam;
 
-use Gdbots\Pbjx\CommandHandler;
-use Gdbots\Pbjx\CommandHandlerTrait;
+use Gdbots\Ncr\AbstractCreateNodeHandler;
 use Gdbots\Pbjx\Pbjx;
-use Gdbots\Schemas\Iam\Mixin\CreateUser\CreateUser;
 use Gdbots\Schemas\Iam\Mixin\CreateUser\CreateUserV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\User\User;
 use Gdbots\Schemas\Iam\Mixin\UserCreated\UserCreatedV1Mixin;
 use Gdbots\Schemas\Ncr\Enum\NodeStatus;
-use Gdbots\Schemas\Pbjx\StreamId;
+use Gdbots\Schemas\Ncr\Mixin\CreateNode\CreateNode;
+use Gdbots\Schemas\Ncr\Mixin\Node\Node;
+use Gdbots\Schemas\Ncr\Mixin\NodeCreated\NodeCreated;
 
-final class CreateUserHandler implements CommandHandler
+class CreateUserHandler extends AbstractCreateNodeHandler
 {
-    use CommandHandlerTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected function isNodeSupported(Node $node): bool
+    {
+        return $node instanceof User;
+    }
 
     /**
-     * fixme: validate that _id was safely set by server?
-     *
-     * @param CreateUser $command
-     * @param Pbjx       $pbjx
+     * {@inheritdoc}
      */
-    protected function handle(CreateUser $command, Pbjx $pbjx): void
+    protected function createNodeCreated(CreateNode $command, Pbjx $pbjx): NodeCreated
     {
+        /** @var NodeCreated $event */
         $event = UserCreatedV1Mixin::findOne()->createMessage();
-        $pbjx->copyContext($command, $event);
+        return $event;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function beforePutEvents(NodeCreated $event, CreateNode $command, Pbjx $pbjx): void
+    {
+        parent::beforePutEvents($event, $command, $pbjx);
 
         /** @var User $node */
-        $node = clone $command->get('node');
+        $node = $event->get('node');
         $node
-            ->clear('updated_at')
-            ->clear('updater_ref')
-            ->clear('roles')
             ->set('status', NodeStatus::PUBLISHED())
-            ->set('created_at', $event->get('occurred_at'))
-            ->set('creator_ref', $event->get('ctx_user_ref'))
-            ->set('last_event_ref', $event->generateMessageRef());
+            // roles SHOULD be set with grant-roles-to-user
+            ->clear('roles');
 
         if ($node->has('email')) {
             $email = strtolower($node->get('email'));
@@ -49,10 +57,6 @@ final class CreateUserHandler implements CommandHandler
         if (!$node->has('title')) {
             $node->set('title', trim($node->get('first_name') . ' ' . $node->get('last_name')));
         }
-
-        $event->set('node', $node);
-        $streamId = StreamId::fromString(sprintf('user.history:%s', $node->get('_id')));
-        $pbjx->getEventStore()->putEvents($streamId, [$event]);
     }
 
     /**

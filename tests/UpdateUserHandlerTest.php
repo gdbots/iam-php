@@ -8,6 +8,7 @@ use Acme\Schemas\Iam\Event\UserUpdatedV1;
 use Acme\Schemas\Iam\Node\UserV1;
 use Gdbots\Iam\UpdateUserHandler;
 use Gdbots\Schemas\Ncr\Enum\NodeStatus;
+use Gdbots\Schemas\Ncr\NodeRef;
 use Gdbots\Schemas\Pbjx\Mixin\Event\Event;
 use Gdbots\Schemas\Pbjx\StreamId;
 
@@ -23,6 +24,7 @@ final class UpdateUserHandlerTest extends AbstractPbjxTest
             'title' => 'Homer Test',
             'roles' => ['acme:role:super-user'],
         ]);
+        $this->ncr->putNode($oldNode);
 
         $newNode = UserV1::fromArray([
             '_id'        => '7afcc2f1-9654-46d1-8fc1-b0511df257db',
@@ -32,10 +34,11 @@ final class UpdateUserHandlerTest extends AbstractPbjxTest
             'roles'      => ['acme:role:tester'],
         ]);
 
-        $command->set('old_node', $oldNode);
+        $command->set('node_ref', NodeRef::fromNode($oldNode));
+        //$command->set('old_node', $oldNode);
         $command->set('new_node', $newNode);
 
-        $handler = new UpdateUserHandler();
+        $handler = new UpdateUserHandler($this->ncr);
         $handler->handleCommand($command, $this->pbjx);
 
         $expectedEvent = UserUpdatedV1::create();
@@ -54,7 +57,7 @@ final class UpdateUserHandlerTest extends AbstractPbjxTest
                 $this->assertSame(NodeStatus::PUBLISHED(), $newNodeFromEvent->get('status'));
                 $this->assertEquals('Update Title', $newNodeFromEvent->get('title'));
                 $this->assertEquals($expectedEmail, $newNodeFromEvent->get('email'));
-                $this->assertSame($expectedRoles, $newNodeFromEvent->get('roles'));
+                $this->assertSame(json_encode($expectedRoles), json_encode($newNodeFromEvent->get('roles')));
                 $this->assertSame(StreamId::fromString("user.history:{$expectedId}")->toString(), $streamId->toString());
                 $this->assertSame($event->generateMessageRef()->toString(), (string)$newNodeFromEvent->get('last_event_ref'));
             });

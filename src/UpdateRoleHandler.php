@@ -3,55 +3,49 @@ declare(strict_types=1);
 
 namespace Gdbots\Iam;
 
-use Gdbots\Pbjx\CommandHandler;
-use Gdbots\Pbjx\CommandHandlerTrait;
+use Gdbots\Ncr\AbstractUpdateNodeHandler;
 use Gdbots\Pbjx\Pbjx;
 use Gdbots\Schemas\Iam\Mixin\Role\Role;
 use Gdbots\Schemas\Iam\Mixin\RoleUpdated\RoleUpdatedV1Mixin;
-use Gdbots\Schemas\Iam\Mixin\UpdateRole\UpdateRole;
 use Gdbots\Schemas\Iam\Mixin\UpdateRole\UpdateRoleV1Mixin;
 use Gdbots\Schemas\Ncr\Enum\NodeStatus;
-use Gdbots\Schemas\Pbjx\StreamId;
+use Gdbots\Schemas\Ncr\Mixin\Node\Node;
+use Gdbots\Schemas\Ncr\Mixin\NodeUpdated\NodeUpdated;
+use Gdbots\Schemas\Ncr\Mixin\UpdateNode\UpdateNode;
 
-final class UpdateRoleHandler implements CommandHandler
+class UpdateRoleHandler extends AbstractUpdateNodeHandler
 {
-    use CommandHandlerTrait;
+    /**
+     * {@inheritdoc}
+     */
+    protected function isNodeSupported(Node $node): bool
+    {
+        return $node instanceof Role;
+    }
 
     /**
-     * @param UpdateRole $command
-     * @param Pbjx       $pbjx
+     * {@inheritdoc}
      */
-    protected function handle(UpdateRole $command, Pbjx $pbjx): void
+    protected function createNodeUpdated(UpdateNode $command, Pbjx $pbjx): NodeUpdated
     {
+        /** @var NodeUpdated $event */
         $event = RoleUpdatedV1Mixin::findOne()->createMessage();
-        $pbjx->copyContext($command, $event);
+        return $event;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function beforePutEvents(NodeUpdated $event, UpdateNode $command, Pbjx $pbjx): void
+    {
+        parent::beforePutEvents($event, $command, $pbjx);
 
         /** @var Role $newNode */
-        $newNode = clone $command->get('new_node');
+        $newNode = $event->get('new_node');
         $newNode
             // a role can only be "published"
             ->set('status', NodeStatus::PUBLISHED())
-            ->set('updated_at', $event->get('occurred_at'))
-            ->set('updater_ref', $event->get('ctx_user_ref'))
-            ->set('last_event_ref', $event->generateMessageRef())
             ->set('title', (string)$newNode->get('_id'));
-
-        if ($command->has('old_node')) {
-            $oldNode = $command->get('old_node');
-            $event->set('old_node', $oldNode);
-
-            $newNode
-                // created_at and creator_ref MUST NOT change
-                ->set('created_at', $oldNode->get('created_at'))
-                ->set('creator_ref', $oldNode->get('creator_ref'));
-        }
-
-        $event
-            ->set('node_ref', $command->get('node_ref'))
-            ->set('new_node', $newNode);
-
-        $streamId = StreamId::fromString(sprintf('role.history:%s', $newNode->get('_id')));
-        $pbjx->getEventStore()->putEvents($streamId, [$event]);
     }
 
     /**

@@ -3,21 +3,30 @@ declare(strict_types=1);
 
 namespace Gdbots\Iam;
 
-use Gdbots\Iam\Exception\InvalidArgumentException;
-use Gdbots\Pbjx\CommandHandler;
-use Gdbots\Pbjx\CommandHandlerTrait;
+use Gdbots\Ncr\AbstractNodeCommandHandler;
+use Gdbots\Ncr\Ncr;
 use Gdbots\Pbjx\Pbjx;
 use Gdbots\Schemas\Iam\Mixin\GrantRolesToUser\GrantRolesToUser;
 use Gdbots\Schemas\Iam\Mixin\GrantRolesToUser\GrantRolesToUserV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\Role\RoleV1Mixin;
-use Gdbots\Schemas\Iam\Mixin\User\UserV1Mixin;
+use Gdbots\Schemas\Iam\Mixin\User\User;
+use Gdbots\Schemas\Iam\Mixin\UserRolesGranted\UserRolesGranted;
 use Gdbots\Schemas\Iam\Mixin\UserRolesGranted\UserRolesGrantedV1Mixin;
+use Gdbots\Schemas\Ncr\Mixin\Node\Node;
 use Gdbots\Schemas\Ncr\NodeRef;
-use Gdbots\Schemas\Pbjx\StreamId;
 
-final class GrantRolesToUserHandler implements CommandHandler
+class GrantRolesToUserHandler extends AbstractNodeCommandHandler
 {
-    use CommandHandlerTrait;
+    /** @var Ncr */
+    protected $ncr;
+
+    /**
+     * @param Ncr $ncr
+     */
+    public function __construct(Ncr $ncr)
+    {
+        $this->ncr = $ncr;
+    }
 
     /**
      * @param GrantRolesToUser $command
@@ -27,14 +36,12 @@ final class GrantRolesToUserHandler implements CommandHandler
     {
         /** @var NodeRef $nodeRef */
         $nodeRef = $command->get('node_ref');
+        $node = $this->ncr->getNode($nodeRef, true, $this->createNcrContext($command));
+        $this->assertIsNodeSupported($node);
 
-        if ($nodeRef->getQName() !== UserV1Mixin::findOne()->getQName()) {
-            throw new InvalidArgumentException("Expected a user, got {$nodeRef}.");
-        }
-
-        $event = UserRolesGrantedV1Mixin::findOne()->createMessage();
-        $event = $event->set('node_ref', $nodeRef);
+        $event = $this->createUserRolesGranted($command, $pbjx);
         $pbjx->copyContext($command, $event);
+        $event->set('node_ref', $nodeRef);
 
         $roles = [];
         $roleQname = RoleV1Mixin::findOne()->getQName();
@@ -47,8 +54,29 @@ final class GrantRolesToUserHandler implements CommandHandler
 
         $event->addToSet('roles', $roles);
 
-        $streamId = StreamId::fromString(sprintf('user.history:%s', $nodeRef->getId()));
-        $pbjx->getEventStore()->putEvents($streamId, [$event]);
+        $this->bindFromNode($event, $node, $pbjx);
+        $this->putEvents($command, $pbjx, $this->createStreamId($nodeRef, $command, $event), [$event]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function isNodeSupported(Node $node): bool
+    {
+        return $node instanceof User;
+    }
+
+    /**
+     * @param GrantRolesToUser $command
+     * @param Pbjx             $pbjx
+     *
+     * @return UserRolesGranted
+     */
+    protected function createUserRolesGranted(GrantRolesToUser $command, Pbjx $pbjx): UserRolesGranted
+    {
+        /** @var UserRolesGranted $event */
+        $event = UserRolesGrantedV1Mixin::findOne()->createMessage();
+        return $event;
     }
 
     /**

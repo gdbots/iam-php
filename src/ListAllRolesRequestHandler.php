@@ -3,21 +3,20 @@ declare(strict_types=1);
 
 namespace Gdbots\Iam;
 
+use Gdbots\Ncr\AbstractRequestHandler;
 use Gdbots\Ncr\Ncr;
-use Gdbots\Pbjx\RequestHandler;
-use Gdbots\Pbjx\RequestHandlerTrait;
+use Gdbots\Pbjx\Pbjx;
+use Gdbots\Schemas\Iam\Mixin\ListAllRolesRequest\ListAllRolesRequest;
 use Gdbots\Schemas\Iam\Mixin\ListAllRolesRequest\ListAllRolesRequestV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\ListAllRolesResponse\ListAllRolesResponse;
 use Gdbots\Schemas\Iam\Mixin\ListAllRolesResponse\ListAllRolesResponseV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\Role\RoleV1Mixin;
 use Gdbots\Schemas\Ncr\NodeRef;
 
-final class ListAllRolesRequestHandler implements RequestHandler
+class ListAllRolesRequestHandler extends AbstractRequestHandler
 {
-    use RequestHandlerTrait;
-
     /** @var Ncr */
-    private $ncr;
+    protected $ncr;
 
     /**
      * @param Ncr $ncr
@@ -28,20 +27,32 @@ final class ListAllRolesRequestHandler implements RequestHandler
     }
 
     /**
+     * @param ListAllRolesRequest $request
+     * @param Pbjx                $pbjx
+     *
      * @return ListAllRolesResponse
      */
-    protected function handle(): ListAllRolesResponse
+    protected function handle(ListAllRolesRequest $request, Pbjx $pbjx): ListAllRolesResponse
     {
-        $schema = ListAllRolesResponseV1Mixin::findOne();
-        /** @var ListAllRolesResponse $response */
-        $response = $schema->createMessage();
-
         $roles = [];
         $this->ncr->pipeNodeRefs(RoleV1Mixin::findOne()->getQName(), function (NodeRef $nodeRef) use (&$roles) {
             $roles[] = $nodeRef;
-        });
+        }, $this->createNcrContext($request));
 
-        return $response->addToSet('roles', $roles);
+        return $this->createListAllRolesResponse($request, $pbjx)->addToSet('roles', $roles);
+    }
+
+    /**
+     * @param ListAllRolesRequest $request
+     * @param Pbjx                $pbjx
+     *
+     * @return ListAllRolesResponse
+     */
+    protected function createListAllRolesResponse(ListAllRolesRequest $request, Pbjx $pbjx): ListAllRolesResponse
+    {
+        /** @var ListAllRolesResponse $response */
+        $response = ListAllRolesResponseV1Mixin::findOne()->createMessage();
+        return $response;
     }
 
     /**

@@ -8,6 +8,7 @@ use Acme\Schemas\Iam\Event\RoleDeletedV1;
 use Acme\Schemas\Iam\Event\RoleUpdatedV1;
 use Acme\Schemas\Iam\Node\RoleV1;
 use Gdbots\Iam\NcrRoleProjector;
+use Gdbots\Ncr\NcrSearch;
 use Gdbots\Schemas\Iam\RoleId;
 use Gdbots\Schemas\Ncr\NodeRef;
 
@@ -16,17 +17,19 @@ final class RoleProjectorTest extends AbstractPbjxTest
     /** @var NcrRoleProjector */
     protected $roleProjecter;
 
+    /** @var NcrSearch|\PHPUnit_Framework_MockObject_MockObject */
+    protected $ncrSearch;
+
     public function setup()
     {
         parent::setup();
-
-        $this->roleProjecter = new NcrRoleProjector($this->ncr);
+        $this->ncrSearch = $this->getMockBuilder(MockNcrSearch::class)->getMock();
+        $this->roleProjecter = new NcrRoleProjector($this->ncr, $this->ncrSearch);
     }
 
     public function tearDown()
     {
         parent::tearDown();
-
         $this->roleProjecter = null;
     }
 
@@ -38,7 +41,7 @@ final class RoleProjectorTest extends AbstractPbjxTest
         $role = $this->createRoleById('super-user');
         $event = RoleCreatedV1::create()->set('node', $role);
 
-        $this->roleProjecter->onRoleCreated($event);
+        $this->roleProjecter->onRoleCreated($event, $this->pbjx);
         $getRole = $this->ncr->getNode(NodeRef::fromString('acme:role:super-user'));
 
         $this->assertTrue($role->equals($getRole));
@@ -53,7 +56,7 @@ final class RoleProjectorTest extends AbstractPbjxTest
         $event = RoleCreatedV1::create()->set('node', $role);
         $event->isReplay(true);
 
-        $this->roleProjecter->onRoleCreated($event);
+        $this->roleProjecter->onRoleCreated($event, $this->pbjx);
 
         $actualRole = $this->ncr->getNode(NodeRef::fromString('acme:role:super-user'));
         $this->assertTrue($role->equals($actualRole));
@@ -81,7 +84,7 @@ final class RoleProjectorTest extends AbstractPbjxTest
             ->set('new_etag', $newRole->get('etag'))
             ->set('node_ref', $nodeRef);
 
-        $this->roleProjecter->onRoleUpdated($event);
+        $this->roleProjecter->onRoleUpdated($event, $this->pbjx);
 
         $actualRole = $this->ncr->getNode($nodeRef);
         $this->assertTrue($newRole->equals($actualRole));
@@ -97,15 +100,18 @@ final class RoleProjectorTest extends AbstractPbjxTest
         $this->ncr->putNode($role);
 
         $event = RoleDeletedV1::create()->set('node_ref', $nodeRef);
-        $this->roleProjecter->onRoleDeleted($event);
+        $this->roleProjecter->onRoleDeleted($event, $this->pbjx);
 
         $this->ncr->getNode($nodeRef);
     }
 
+    /**
+     * @expectedException \Gdbots\Ncr\Exception\NodeNotFound
+     */
     public function testOnRoleDeletedNodeRefNotExists(): void
     {
         $event = RoleDeletedV1::create()->set('node_ref', NodeRef::fromString('acme:role:role-not-exists'));
-        $this->roleProjecter->onRoleDeleted($event);
+        $this->roleProjecter->onRoleDeleted($event, $this->pbjx);
         $this->assertTrue(true, 'No exception on missing node_ref');
     }
 

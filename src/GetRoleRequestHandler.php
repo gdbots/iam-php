@@ -3,47 +3,23 @@ declare(strict_types=1);
 
 namespace Gdbots\Iam;
 
-use Gdbots\Ncr\Exception\NodeNotFound;
-use Gdbots\Ncr\Ncr;
-use Gdbots\Pbjx\RequestHandler;
-use Gdbots\Pbjx\RequestHandlerTrait;
-use Gdbots\Schemas\Iam\Mixin\GetRoleRequest\GetRoleRequest;
+use Gdbots\Ncr\AbstractGetNodeRequestHandler;
+use Gdbots\Pbjx\Pbjx;
 use Gdbots\Schemas\Iam\Mixin\GetRoleRequest\GetRoleRequestV1Mixin;
-use Gdbots\Schemas\Iam\Mixin\GetRoleResponse\GetRoleResponse;
 use Gdbots\Schemas\Iam\Mixin\GetRoleResponse\GetRoleResponseV1Mixin;
+use Gdbots\Schemas\Ncr\Mixin\GetNodeRequest\GetNodeRequest;
+use Gdbots\Schemas\Ncr\Mixin\GetNodeResponse\GetNodeResponse;
 
-final class GetRoleRequestHandler implements RequestHandler
+class GetRoleRequestHandler extends AbstractGetNodeRequestHandler
 {
-    use RequestHandlerTrait;
-
-    /** @var Ncr */
-    private $ncr;
-
     /**
-     * @param Ncr $ncr
+     * {@inheritdoc}
      */
-    public function __construct(Ncr $ncr)
+    protected function createGetNodeResponse(GetNodeRequest $request, Pbjx $pbjx): GetNodeResponse
     {
-        $this->ncr = $ncr;
-    }
-
-    /**
-     * @param GetRoleRequest $request
-     *
-     * @return GetRoleResponse
-     */
-    protected function handle(GetRoleRequest $request): GetRoleResponse
-    {
-        if (!$request->has('node_ref')) {
-            throw new NodeNotFound('No method available to find role.');
-        }
-
-        $node = $this->ncr->getNode($request->get('node_ref'), $request->get('consistent_read'));
-
-        $schema = GetRoleResponseV1Mixin::findOne();
-        /** @var GetRoleResponse $response */
-        $response = $schema->createMessage();
-        return $response->set('node', $node);
+        /** @var GetNodeResponse $response */
+        $response = GetRoleResponseV1Mixin::findOne()->createMessage();
+        return $response;
     }
 
     /**
