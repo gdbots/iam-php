@@ -4,13 +4,10 @@ declare(strict_types=1);
 namespace Gdbots\Iam;
 
 use Gdbots\Ncr\AbstractDeleteNodeHandler;
-use Gdbots\Pbjx\Pbjx;
-use Gdbots\Schemas\Iam\Mixin\DeleteUser\DeleteUserV1Mixin;
+use Gdbots\Pbj\SchemaCurie;
 use Gdbots\Schemas\Iam\Mixin\User\User;
-use Gdbots\Schemas\Iam\Mixin\UserDeleted\UserDeletedV1Mixin;
-use Gdbots\Schemas\Ncr\Mixin\DeleteNode\DeleteNode;
+use Gdbots\Schemas\Iam\Mixin\User\UserV1Mixin;
 use Gdbots\Schemas\Ncr\Mixin\Node\Node;
-use Gdbots\Schemas\Ncr\Mixin\NodeDeleted\NodeDeleted;
 
 class DeleteUserHandler extends AbstractDeleteNodeHandler
 {
@@ -25,20 +22,11 @@ class DeleteUserHandler extends AbstractDeleteNodeHandler
     /**
      * {@inheritdoc}
      */
-    protected function createNodeDeleted(DeleteNode $command, Pbjx $pbjx): NodeDeleted
-    {
-        /** @var NodeDeleted $event */
-        $event = UserDeletedV1Mixin::findOne()->createMessage();
-        return $event;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public static function handlesCuries(): array
     {
+        $curie = UserV1Mixin::findOne()->getCurie();
         return [
-            DeleteUserV1Mixin::findOne()->getCurie(),
+            SchemaCurie::fromString("{$curie->getVendor()}:{$curie->getPackage()}:command:delete-user"),
         ];
     }
 }

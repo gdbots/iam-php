@@ -9,7 +9,6 @@ use Gdbots\Pbjx\Pbjx;
 use Gdbots\Schemas\Iam\Mixin\ListAllRolesRequest\ListAllRolesRequest;
 use Gdbots\Schemas\Iam\Mixin\ListAllRolesRequest\ListAllRolesRequestV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\ListAllRolesResponse\ListAllRolesResponse;
-use Gdbots\Schemas\Iam\Mixin\ListAllRolesResponse\ListAllRolesResponseV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\Role\RoleV1Mixin;
 use Gdbots\Schemas\Ncr\NodeRef;
 
@@ -51,7 +50,7 @@ class ListAllRolesRequestHandler extends AbstractRequestHandler
     protected function createListAllRolesResponse(ListAllRolesRequest $request, Pbjx $pbjx): ListAllRolesResponse
     {
         /** @var ListAllRolesResponse $response */
-        $response = ListAllRolesResponseV1Mixin::findOne()->createMessage();
+        $response = $this->createResponseFromRequest($request, $pbjx);
         return $response;
     }
 

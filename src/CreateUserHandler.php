@@ -4,10 +4,10 @@ declare(strict_types=1);
 namespace Gdbots\Iam;
 
 use Gdbots\Ncr\AbstractCreateNodeHandler;
+use Gdbots\Pbj\SchemaCurie;
 use Gdbots\Pbjx\Pbjx;
-use Gdbots\Schemas\Iam\Mixin\CreateUser\CreateUserV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\User\User;
-use Gdbots\Schemas\Iam\Mixin\UserCreated\UserCreatedV1Mixin;
+use Gdbots\Schemas\Iam\Mixin\User\UserV1Mixin;
 use Gdbots\Schemas\Ncr\Enum\NodeStatus;
 use Gdbots\Schemas\Ncr\Mixin\CreateNode\CreateNode;
 use Gdbots\Schemas\Ncr\Mixin\Node\Node;
@@ -21,16 +21,6 @@ class CreateUserHandler extends AbstractCreateNodeHandler
     protected function isNodeSupported(Node $node): bool
     {
         return $node instanceof User;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function createNodeCreated(CreateNode $command, Pbjx $pbjx): NodeCreated
-    {
-        /** @var NodeCreated $event */
-        $event = UserCreatedV1Mixin::findOne()->createMessage();
-        return $event;
     }
 
     /**
@@ -64,8 +54,9 @@ class CreateUserHandler extends AbstractCreateNodeHandler
      */
     public static function handlesCuries(): array
     {
+        $curie = UserV1Mixin::findOne()->getCurie();
         return [
-            CreateUserV1Mixin::findOne()->getCurie(),
+            SchemaCurie::fromString("{$curie->getVendor()}:{$curie->getPackage()}:command:create-user"),
         ];
     }
 }

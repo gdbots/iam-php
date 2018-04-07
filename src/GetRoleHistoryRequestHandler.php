@@ -4,31 +4,19 @@ declare(strict_types=1);
 namespace Gdbots\Iam;
 
 use Gdbots\Ncr\AbstractGetNodeHistoryRequestHandler;
-use Gdbots\Pbjx\Pbjx;
-use Gdbots\Schemas\Iam\Mixin\GetRoleHistoryRequest\GetRoleHistoryRequestV1Mixin;
-use Gdbots\Schemas\Iam\Mixin\GetRoleHistoryResponse\GetRoleHistoryResponseV1Mixin;
-use Gdbots\Schemas\Pbjx\Mixin\GetEventsRequest\GetEventsRequest;
-use Gdbots\Schemas\Pbjx\Mixin\GetEventsResponse\GetEventsResponse;
+use Gdbots\Pbj\SchemaCurie;
+use Gdbots\Schemas\Iam\Mixin\Role\RoleV1Mixin;
 
 class GetRoleHistoryRequestHandler extends AbstractGetNodeHistoryRequestHandler
 {
     /**
      * {@inheritdoc}
      */
-    protected function createGetEventsResponse(GetEventsRequest $request, Pbjx $pbjx): GetEventsResponse
-    {
-        /** @var GetEventsResponse $response */
-        $response = GetRoleHistoryResponseV1Mixin::findOne()->createMessage();
-        return $response;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public static function handlesCuries(): array
     {
+        $curie = RoleV1Mixin::findOne()->getCurie();
         return [
-            GetRoleHistoryRequestV1Mixin::findOne()->getCurie(),
+            SchemaCurie::fromString("{$curie->getVendor()}:{$curie->getPackage()}:request:get-role-history-request"),
         ];
     }
 }

@@ -7,10 +7,10 @@ use Gdbots\Ncr\AbstractNodeProjector;
 use Gdbots\Pbjx\EventSubscriber;
 use Gdbots\Pbjx\EventSubscriberTrait;
 use Gdbots\Pbjx\Pbjx;
-use Gdbots\Schemas\Iam\Mixin\RoleCreated\RoleCreated;
-use Gdbots\Schemas\Iam\Mixin\RoleCreated\RoleCreatedV1Mixin;
-use Gdbots\Schemas\Iam\Mixin\RoleDeleted\RoleDeleted;
-use Gdbots\Schemas\Iam\Mixin\RoleUpdated\RoleUpdated;
+use Gdbots\Schemas\Iam\Mixin\Role\RoleV1Mixin;
+use Gdbots\Schemas\Ncr\Mixin\NodeCreated\NodeCreated;
+use Gdbots\Schemas\Ncr\Mixin\NodeDeleted\NodeDeleted;
+use Gdbots\Schemas\Ncr\Mixin\NodeUpdated\NodeUpdated;
 
 class NcrRoleProjector extends AbstractNodeProjector implements EventSubscriber
 {
@@ -24,35 +24,35 @@ class NcrRoleProjector extends AbstractNodeProjector implements EventSubscriber
      */
     public static function getSubscribedEvents()
     {
-        $curie = RoleCreatedV1Mixin::findOne()->getCurie();
+        $curie = RoleV1Mixin::findOne()->getCurie();
         return [
-            "{$curie->getVendor()}:{$curie->getPackage()}:{$curie->getCategory()}:*" => 'onEvent',
+            "{$curie->getVendor()}:{$curie->getPackage()}:event:*" => 'onEvent',
         ];
     }
 
     /**
-     * @param RoleCreated $event
+     * @param NodeCreated $event
      * @param Pbjx        $pbjx
      */
-    public function onRoleCreated(RoleCreated $event, Pbjx $pbjx): void
+    public function onRoleCreated(NodeCreated $event, Pbjx $pbjx): void
     {
         $this->handleNodeCreated($event, $pbjx);
     }
 
     /**
-     * @param RoleDeleted $event
+     * @param NodeDeleted $event
      * @param Pbjx        $pbjx
      */
-    public function onRoleDeleted(RoleDeleted $event, Pbjx $pbjx): void
+    public function onRoleDeleted(NodeDeleted $event, Pbjx $pbjx): void
     {
         $this->handleNodeDeleted($event, $pbjx);
     }
 
     /**
-     * @param RoleUpdated $event
+     * @param NodeUpdated $event
      * @param Pbjx        $pbjx
      */
-    public function onRoleUpdated(RoleUpdated $event, Pbjx $pbjx): void
+    public function onRoleUpdated(NodeUpdated $event, Pbjx $pbjx): void
     {
         $this->handleNodeUpdated($event, $pbjx);
     }

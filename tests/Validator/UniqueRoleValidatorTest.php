@@ -9,7 +9,7 @@ use Acme\Schemas\Iam\Event\RoleCreatedV1;
 use Acme\Schemas\Iam\Node\RoleV1;
 use Acme\Schemas\Iam\Request\GetRoleRequestV1;
 use Gdbots\Iam\GetRoleRequestHandler;
-use Gdbots\Iam\Validator\UniqueRoleValidator;
+use Gdbots\Ncr\Validator\UniqueNodeValidator;
 use Gdbots\Pbjx\Event\PbjxEvent;
 use Gdbots\Schemas\Iam\RoleId;
 use Gdbots\Schemas\Pbjx\StreamId;
@@ -35,16 +35,16 @@ final class UniqueRoleValidatorTest extends AbstractPbjxTest
         $node = RoleV1::fromArray(['_id' => RoleId::fromString('super-user')]);
         $command->set('node', $node);
 
-        $validator = new UniqueRoleValidator();
+        $validator = new UniqueNodeValidator();
         $pbjxEvent = new PbjxEvent($command);
-        $validator->validateCreateRole($pbjxEvent);
+        $validator->validateCreateNode($pbjxEvent);
 
         // if it gets here it's a pass
         $this->assertTrue(true);
     }
 
     /**
-     * @expectedException \Gdbots\Iam\Exception\RoleAlreadyExists
+     * @expectedException \Gdbots\Ncr\Exception\NodeAlreadyExists
      */
     public function testValidateCreateRoleThatDoesExistById(): void
     {
@@ -55,9 +55,9 @@ final class UniqueRoleValidatorTest extends AbstractPbjxTest
         $event->set('node', $node);
         $this->eventStore->putEvents(StreamId::fromString("role.history:{$node->get('_id')}"), [$event]);
 
-        $validator = new UniqueRoleValidator();
+        $validator = new UniqueNodeValidator();
         $pbjxEvent = new PbjxEvent($command);
-        $validator->validateCreateRole($pbjxEvent);
+        $validator->validateCreateNode($pbjxEvent);
     }
 
     public function testValidateUpdateRole(): void
@@ -78,9 +78,9 @@ final class UniqueRoleValidatorTest extends AbstractPbjxTest
         $command->set('old_node', $oldNode);
         $command->set('new_node', $newNode);
 
-        $validator = new UniqueRoleValidator();
+        $validator = new UniqueNodeValidator();
         $pbjxEvent = new PbjxEvent($command);
-        $validator->validateUpdateRole($pbjxEvent);
+        $validator->validateUpdateNode($pbjxEvent);
 
         // if it gets here it's a pass
         $this->assertTrue(true);
@@ -100,8 +100,8 @@ final class UniqueRoleValidatorTest extends AbstractPbjxTest
 
         $command->set('old_node', $oldNode);
 
-        $validator = new UniqueRoleValidator();
+        $validator = new UniqueNodeValidator();
         $pbjxEvent = new PbjxEvent($command);
-        $validator->validateUpdateRole($pbjxEvent);
+        $validator->validateUpdateNode($pbjxEvent);
     }
 }

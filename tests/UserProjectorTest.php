@@ -141,14 +141,13 @@ final class UserProjectorTest extends AbstractPbjxTest
         $this->assertEquals(NodeStatus::DELETED(), $deleteduser->get('status'));
     }
 
-    /**
-     * @expectedException \Gdbots\Ncr\Exception\NodeNotFound
-     */
     public function testOnUserDeletedNodeRefNotExists(): void
     {
-        $event = UserDeletedV1::create()->set('node_ref', NodeRef::fromString('acme:user:7afcc2f1-9654-46d1-8fc1-b0511df257db'));
+        $nodeRef = NodeRef::fromString('acme:user:7afcc2f1-9654-46d1-8fc1-b0511df257db');
+        $event = UserDeletedV1::create()->set('node_ref', $nodeRef);
 
         $this->userProjector->onUserDeleted($event, $this->pbjx);
+        $this->assertFalse($this->ncr->hasNode($nodeRef));
     }
 
     /**
@@ -188,9 +187,6 @@ final class UserProjectorTest extends AbstractPbjxTest
         $this->userProjector->onUserRolesGranted($event, $this->pbjx);
     }
 
-    /**
-     * testOnUserRolesRevoked
-     */
     public function testOnUserRolesRevoked(): void
     {
         $superRole = $this->createRoleById('super-user');
