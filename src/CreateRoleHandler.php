@@ -4,10 +4,10 @@ declare(strict_types=1);
 namespace Gdbots\Iam;
 
 use Gdbots\Ncr\AbstractCreateNodeHandler;
+use Gdbots\Pbj\SchemaCurie;
 use Gdbots\Pbjx\Pbjx;
-use Gdbots\Schemas\Iam\Mixin\CreateRole\CreateRoleV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\Role\Role;
-use Gdbots\Schemas\Iam\Mixin\RoleCreated\RoleCreatedV1Mixin;
+use Gdbots\Schemas\Iam\Mixin\Role\RoleV1Mixin;
 use Gdbots\Schemas\Ncr\Enum\NodeStatus;
 use Gdbots\Schemas\Ncr\Mixin\CreateNode\CreateNode;
 use Gdbots\Schemas\Ncr\Mixin\Node\Node;
@@ -21,16 +21,6 @@ class CreateRoleHandler extends AbstractCreateNodeHandler
     protected function isNodeSupported(Node $node): bool
     {
         return $node instanceof Role;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function createNodeCreated(CreateNode $command, Pbjx $pbjx): NodeCreated
-    {
-        /** @var NodeCreated $event */
-        $event = RoleCreatedV1Mixin::findOne()->createMessage();
-        return $event;
     }
 
     /**
@@ -52,8 +42,9 @@ class CreateRoleHandler extends AbstractCreateNodeHandler
      */
     public static function handlesCuries(): array
     {
+        $curie = RoleV1Mixin::findOne()->getCurie();
         return [
-            CreateRoleV1Mixin::findOne()->getCurie(),
+            SchemaCurie::fromString("{$curie->getVendor()}:{$curie->getPackage()}:command:create-role"),
         ];
     }
 }

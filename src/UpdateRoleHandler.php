@@ -4,10 +4,10 @@ declare(strict_types=1);
 namespace Gdbots\Iam;
 
 use Gdbots\Ncr\AbstractUpdateNodeHandler;
+use Gdbots\Pbj\SchemaCurie;
 use Gdbots\Pbjx\Pbjx;
 use Gdbots\Schemas\Iam\Mixin\Role\Role;
-use Gdbots\Schemas\Iam\Mixin\RoleUpdated\RoleUpdatedV1Mixin;
-use Gdbots\Schemas\Iam\Mixin\UpdateRole\UpdateRoleV1Mixin;
+use Gdbots\Schemas\Iam\Mixin\Role\RoleV1Mixin;
 use Gdbots\Schemas\Ncr\Enum\NodeStatus;
 use Gdbots\Schemas\Ncr\Mixin\Node\Node;
 use Gdbots\Schemas\Ncr\Mixin\NodeUpdated\NodeUpdated;
@@ -21,16 +21,6 @@ class UpdateRoleHandler extends AbstractUpdateNodeHandler
     protected function isNodeSupported(Node $node): bool
     {
         return $node instanceof Role;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function createNodeUpdated(UpdateNode $command, Pbjx $pbjx): NodeUpdated
-    {
-        /** @var NodeUpdated $event */
-        $event = RoleUpdatedV1Mixin::findOne()->createMessage();
-        return $event;
     }
 
     /**
@@ -53,8 +43,9 @@ class UpdateRoleHandler extends AbstractUpdateNodeHandler
      */
     public static function handlesCuries(): array
     {
+        $curie = RoleV1Mixin::findOne()->getCurie();
         return [
-            UpdateRoleV1Mixin::findOne()->getCurie(),
+            SchemaCurie::fromString("{$curie->getVendor()}:{$curie->getPackage()}:command:update-role"),
         ];
     }
 }

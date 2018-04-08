@@ -7,12 +7,12 @@ use Gdbots\Ncr\AbstractNodeProjector;
 use Gdbots\Pbjx\EventSubscriber;
 use Gdbots\Pbjx\EventSubscriberTrait;
 use Gdbots\Pbjx\Pbjx;
-use Gdbots\Schemas\Iam\Mixin\UserCreated\UserCreated;
-use Gdbots\Schemas\Iam\Mixin\UserCreated\UserCreatedV1Mixin;
-use Gdbots\Schemas\Iam\Mixin\UserDeleted\UserDeleted;
+use Gdbots\Schemas\Iam\Mixin\User\UserV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\UserRolesGranted\UserRolesGranted;
 use Gdbots\Schemas\Iam\Mixin\UserRolesRevoked\UserRolesRevoked;
-use Gdbots\Schemas\Iam\Mixin\UserUpdated\UserUpdated;
+use Gdbots\Schemas\Ncr\Mixin\NodeCreated\NodeCreated;
+use Gdbots\Schemas\Ncr\Mixin\NodeDeleted\NodeDeleted;
+use Gdbots\Schemas\Ncr\Mixin\NodeUpdated\NodeUpdated;
 use Gdbots\Schemas\Ncr\NodeRef;
 
 class NcrUserProjector extends AbstractNodeProjector implements EventSubscriber
@@ -24,26 +24,26 @@ class NcrUserProjector extends AbstractNodeProjector implements EventSubscriber
      */
     public static function getSubscribedEvents()
     {
-        $curie = UserCreatedV1Mixin::findOne()->getCurie();
+        $curie = UserV1Mixin::findOne()->getCurie();
         return [
-            "{$curie->getVendor()}:{$curie->getPackage()}:{$curie->getCategory()}:*" => 'onEvent',
+            "{$curie->getVendor()}:{$curie->getPackage()}:event:*" => 'onEvent',
         ];
     }
 
     /**
-     * @param UserCreated $event
+     * @param NodeCreated $event
      * @param Pbjx        $pbjx
      */
-    public function onUserCreated(UserCreated $event, Pbjx $pbjx): void
+    public function onUserCreated(NodeCreated $event, Pbjx $pbjx): void
     {
         $this->handleNodeCreated($event, $pbjx);
     }
 
     /**
-     * @param UserDeleted $event
+     * @param NodeDeleted $event
      * @param Pbjx        $pbjx
      */
-    public function onUserDeleted(UserDeleted $event, Pbjx $pbjx): void
+    public function onUserDeleted(NodeDeleted $event, Pbjx $pbjx): void
     {
         $this->handleNodeDeleted($event, $pbjx);
     }
@@ -75,10 +75,10 @@ class NcrUserProjector extends AbstractNodeProjector implements EventSubscriber
     }
 
     /**
-     * @param UserUpdated $event
+     * @param NodeUpdated $event
      * @param Pbjx        $pbjx
      */
-    public function onUserUpdated(UserUpdated $event, Pbjx $pbjx): void
+    public function onUserUpdated(NodeUpdated $event, Pbjx $pbjx): void
     {
         $this->handleNodeUpdated($event, $pbjx);
     }

@@ -9,10 +9,11 @@ use Gdbots\Ncr\IndexQueryBuilder;
 use Gdbots\Pbj\SchemaQName;
 use Gdbots\Pbjx\Pbjx;
 use Gdbots\Schemas\Iam\Mixin\GetUserRequest\GetUserRequestV1Mixin;
-use Gdbots\Schemas\Iam\Mixin\GetUserResponse\GetUserResponseV1Mixin;
+use Gdbots\Schemas\Iam\Mixin\User\User;
 use Gdbots\Schemas\Ncr\Enum\NodeStatus;
 use Gdbots\Schemas\Ncr\Mixin\GetNodeRequest\GetNodeRequest;
 use Gdbots\Schemas\Ncr\Mixin\GetNodeResponse\GetNodeResponse;
+use Gdbots\Schemas\Ncr\Mixin\Node\Node;
 
 class GetUserRequestHandler extends AbstractGetNodeRequestHandler
 {
@@ -37,17 +38,16 @@ class GetUserRequestHandler extends AbstractGetNodeRequestHandler
         }
 
         $node = $this->ncr->getNode($result->getNodeRefs()[0], $request->get('consistent_read'), $context);
+        $this->assertIsNodeSupported($node);
         return $this->createGetNodeResponse($request, $pbjx)->set('node', $node);
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function createGetNodeResponse(GetNodeRequest $request, Pbjx $pbjx): GetNodeResponse
+    protected function isNodeSupported(Node $node): bool
     {
-        /** @var GetNodeResponse $response */
-        $response = GetUserResponseV1Mixin::findOne()->createMessage();
-        return $response;
+        return $node instanceof User;
     }
 
     /**

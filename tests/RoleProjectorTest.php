@@ -105,14 +105,12 @@ final class RoleProjectorTest extends AbstractPbjxTest
         $this->ncr->getNode($nodeRef);
     }
 
-    /**
-     * @expectedException \Gdbots\Ncr\Exception\NodeNotFound
-     */
     public function testOnRoleDeletedNodeRefNotExists(): void
     {
-        $event = RoleDeletedV1::create()->set('node_ref', NodeRef::fromString('acme:role:role-not-exists'));
+        $nodeRef = NodeRef::fromString('acme:role:role-not-exists');
+        $event = RoleDeletedV1::create()->set('node_ref', $nodeRef);
         $this->roleProjecter->onRoleDeleted($event, $this->pbjx);
-        $this->assertTrue(true, 'No exception on missing node_ref');
+        $this->assertFalse($this->ncr->hasNode($nodeRef));
     }
 
     /**

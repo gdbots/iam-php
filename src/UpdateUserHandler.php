@@ -4,10 +4,10 @@ declare(strict_types=1);
 namespace Gdbots\Iam;
 
 use Gdbots\Ncr\AbstractUpdateNodeHandler;
+use Gdbots\Pbj\SchemaCurie;
 use Gdbots\Pbjx\Pbjx;
-use Gdbots\Schemas\Iam\Mixin\UpdateUser\UpdateUserV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\User\User;
-use Gdbots\Schemas\Iam\Mixin\UserUpdated\UserUpdatedV1Mixin;
+use Gdbots\Schemas\Iam\Mixin\User\UserV1Mixin;
 use Gdbots\Schemas\Ncr\Enum\NodeStatus;
 use Gdbots\Schemas\Ncr\Mixin\Node\Node;
 use Gdbots\Schemas\Ncr\Mixin\NodeUpdated\NodeUpdated;
@@ -21,16 +21,6 @@ class UpdateUserHandler extends AbstractUpdateNodeHandler
     protected function isNodeSupported(Node $node): bool
     {
         return $node instanceof User;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function createNodeUpdated(UpdateNode $command, Pbjx $pbjx): NodeUpdated
-    {
-        /** @var NodeUpdated $event */
-        $event = UserUpdatedV1Mixin::findOne()->createMessage();
-        return $event;
     }
 
     /**
@@ -76,8 +66,9 @@ class UpdateUserHandler extends AbstractUpdateNodeHandler
      */
     public static function handlesCuries(): array
     {
+        $curie = UserV1Mixin::findOne()->getCurie();
         return [
-            UpdateUserV1Mixin::findOne()->getCurie(),
+            SchemaCurie::fromString("{$curie->getVendor()}:{$curie->getPackage()}:command:update-user"),
         ];
     }
 }
