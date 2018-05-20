@@ -14,6 +14,9 @@ use Gdbots\Schemas\Iam\Mixin\GrantRolesToApp\GrantRolesToAppV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\Role\RoleV1Mixin;
 use Gdbots\Schemas\Ncr\Mixin\Node\Node;
 use Gdbots\Schemas\Ncr\NodeRef;
+use Gdbots\Schemas\Pbjx\Mixin\Command\Command;
+use Gdbots\Schemas\Pbjx\Mixin\Event\Event;
+use Gdbots\Schemas\Pbjx\StreamId;
 
 class GrantRolesToAppHandler extends AbstractNodeCommandHandler
 {
@@ -64,6 +67,11 @@ class GrantRolesToAppHandler extends AbstractNodeCommandHandler
     protected function isNodeSupported(Node $node): bool
     {
         return $node instanceof App;
+    }
+
+    protected function createStreamId(NodeRef $nodeRef, Command $command, Event $event): StreamId
+    {
+        return StreamId::fromString(sprintf('app.history:%s', $nodeRef->getId()));
     }
 
     /**

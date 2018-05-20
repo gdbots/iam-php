@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Gdbots\Iam;
 
 use Gdbots\Ncr\AbstractUpdateNodeHandler;
+use Gdbots\Pbj\MessageResolver;
 use Gdbots\Pbj\SchemaCurie;
 use Gdbots\Pbjx\Pbjx;
 use Gdbots\Schemas\Iam\Mixin\App\App;
@@ -12,6 +13,8 @@ use Gdbots\Schemas\Ncr\Enum\NodeStatus;
 use Gdbots\Schemas\Ncr\Mixin\Node\Node;
 use Gdbots\Schemas\Ncr\Mixin\NodeUpdated\NodeUpdated;
 use Gdbots\Schemas\Ncr\Mixin\UpdateNode\UpdateNode;
+use Gdbots\Schemas\Ncr\NodeRef;
+use Gdbots\Schemas\Pbjx\Mixin\Event\Event;
 
 class UpdateAppHandler extends AbstractUpdateNodeHandler
 {
@@ -34,6 +37,21 @@ class UpdateAppHandler extends AbstractUpdateNodeHandler
         $newNode = $event->get('new_node');
         // a app can only be "published"
         $newNode->set('status', NodeStatus::PUBLISHED());
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function createNodeUpdated(UpdateNode $command, Pbjx $pbjx): NodeUpdated
+    {
+        /** @var NodeRef $nodeRef */
+        $nodeRef = $command->get('node_ref') ?: NodeRef::fromNode($command->get('node'));
+        $curie = $command::schema()->getCurie();
+        $eventCurie = "{$curie->getVendor()}:{$curie->getPackage()}:event:app-updated";
+
+        /** @var Event $class */
+        $class = MessageResolver::resolveCurie(SchemaCurie::fromString($eventCurie));
+        return $class::create();
     }
 
     /**
