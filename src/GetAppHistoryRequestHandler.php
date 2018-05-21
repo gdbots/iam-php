@@ -41,7 +41,7 @@ class GetAppHistoryRequestHandler extends AbstractGetNodeHistoryRequestHandler
         $schema = AppV1Mixin::findAll()[0];
         $curie = $schema->getCurie();
         return [
-            SchemaCurie::fromString("{$curie->getVendor()}:{$curie->getPackage()}:command:get-app-history-request"),
+            SchemaCurie::fromString("{$curie->getVendor()}:{$curie->getPackage()}:request:get-app-history-request"),
         ];
     }
 }
