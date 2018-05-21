@@ -35,7 +35,7 @@ final class GrantRolesToAppHandlerTest extends AbstractPbjxTest
 
         $this->eventStore->pipeAllEvents(function (Event $event, StreamId $streamId) use ($expectedEvent, $roles) {
             $this->assertSame($event::schema(), $expectedEvent::schema());
-            $this->assertSame(StreamId::fromString("app.history:{$event->get('node_ref')->getId()}")->toString(), $streamId->toString());
+            $this->assertSame(StreamId::fromString("ios-app.history:{$event->get('node_ref')->getId()}")->toString(), $streamId->toString());
             $this->assertSame($roles, $event->get('roles'));
         });
     }
@@ -55,7 +55,7 @@ final class GrantRolesToAppHandlerTest extends AbstractPbjxTest
 
         $this->eventStore->pipeAllEvents(function (Event $event, StreamId $streamId) use ($expectedEvent) {
             $this->assertSame($event::schema(), $expectedEvent::schema());
-            $this->assertSame(StreamId::fromString("app.history:{$event->get('node_ref')->getId()}")->toString(), $streamId->toString());
+            $this->assertSame(StreamId::fromString("ios-app.history:{$event->get('node_ref')->getId()}")->toString(), $streamId->toString());
             $this->assertEmpty($event->get('roles'));
         });
     }

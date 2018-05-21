@@ -3,20 +3,21 @@ declare(strict_types=1);
 
 namespace Gdbots\Iam;
 
+use Gdbots\Iam\Util\AppPbjxHelperTrait;
 use Gdbots\Ncr\AbstractNodeCommandHandler;
 use Gdbots\Ncr\Ncr;
 use Gdbots\Pbjx\Pbjx;
 use Gdbots\Schemas\Iam\Mixin\RevokeRolesFromApp\RevokeRolesFromApp;
 use Gdbots\Schemas\Iam\Mixin\RevokeRolesFromApp\RevokeRolesFromAppV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\Role\RoleV1Mixin;
-use Gdbots\Schemas\Iam\Mixin\App\App;
 use Gdbots\Schemas\Iam\Mixin\AppRolesRevoked\AppRolesRevoked;
 use Gdbots\Schemas\Iam\Mixin\AppRolesRevoked\AppRolesRevokedV1Mixin;
-use Gdbots\Schemas\Ncr\Mixin\Node\Node;
 use Gdbots\Schemas\Ncr\NodeRef;
 
 class RevokeRolesFromAppHandler extends AbstractNodeCommandHandler
 {
+    use AppPbjxHelperTrait;
+
     /** @var Ncr */
     protected $ncr;
 
@@ -56,14 +57,6 @@ class RevokeRolesFromAppHandler extends AbstractNodeCommandHandler
 
         $this->bindFromNode($event, $node, $pbjx);
         $this->putEvents($command, $pbjx, $this->createStreamId($nodeRef, $command, $event), [$event]);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function isNodeSupported(Node $node): bool
-    {
-        return $node instanceof App;
     }
 
     /**

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Gdbots\Iam;
 
+use Gdbots\Iam\Util\AppPbjxHelperTrait;
 use Gdbots\Ncr\AbstractUpdateNodeHandler;
 use Gdbots\Pbj\MessageResolver;
 use Gdbots\Pbj\SchemaCurie;
@@ -20,13 +21,7 @@ use Gdbots\Schemas\Pbjx\StreamId;
 
 class UpdateAppHandler extends AbstractUpdateNodeHandler
 {
-    /**
-     * {@inheritdoc}
-     */
-    protected function isNodeSupported(Node $node): bool
-    {
-        return $node instanceof App;
-    }
+    use AppPbjxHelperTrait;
 
     /**
      * {@inheritdoc}
@@ -39,29 +34,6 @@ class UpdateAppHandler extends AbstractUpdateNodeHandler
         $newNode = $event->get('new_node');
         // a app can only be "published"
         $newNode->set('status', NodeStatus::PUBLISHED());
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function createNodeUpdated(UpdateNode $command, Pbjx $pbjx): NodeUpdated
-    {
-        /** @var NodeRef $nodeRef */
-        $nodeRef = $command->get('node_ref') ?: NodeRef::fromNode($command->get('node'));
-        $curie = $command::schema()->getCurie();
-        $eventCurie = "{$curie->getVendor()}:{$curie->getPackage()}:event:app-updated";
-
-        /** @var Event $class */
-        $class = MessageResolver::resolveCurie(SchemaCurie::fromString($eventCurie));
-        return $class::create();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function createStreamId(NodeRef $nodeRef, Command $command, Event $event): StreamId
-    {
-        return StreamId::fromString(sprintf('app.history:%s', $nodeRef->getId()));
     }
 
     /**

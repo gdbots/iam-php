@@ -29,7 +29,7 @@ final class DeleteAppHandlerTest extends AbstractPbjxTest
 
         $this->eventStore->pipeAllEvents(function (Event $event, StreamId $streamId) use ($expectedEvent, $expectedId) {
             $this->assertSame($event::schema(), $expectedEvent::schema());
-            $this->assertSame(StreamId::fromString("app.history:{$expectedId}")->toString(), $streamId->toString());
+            $this->assertSame(StreamId::fromString("ios-app.history:{$expectedId}")->toString(), $streamId->toString());
         });
     }
 }

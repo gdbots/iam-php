@@ -4,7 +4,8 @@ declare(strict_types=1);
 namespace Gdbots\Iam;
 
 use Gdbots\Ncr\AbstractCreateNodeHandler;
-use Gdbots\Pbj\MessageResolver;
+use Gdbots\Iam\Util\AppPbjxHelperTrait;
+use Gdbots\Pbj\Schema;
 use Gdbots\Pbj\SchemaCurie;
 use Gdbots\Pbjx\Pbjx;
 use Gdbots\Schemas\Iam\Mixin\App\App;
@@ -13,13 +14,11 @@ use Gdbots\Schemas\Ncr\Enum\NodeStatus;
 use Gdbots\Schemas\Ncr\Mixin\CreateNode\CreateNode;
 use Gdbots\Schemas\Ncr\Mixin\Node\Node;
 use Gdbots\Schemas\Ncr\Mixin\NodeCreated\NodeCreated;
-use Gdbots\Schemas\Ncr\NodeRef;
-use Gdbots\Schemas\Pbjx\Mixin\Command\Command;
-use Gdbots\Schemas\Pbjx\Mixin\Event\Event;
-use Gdbots\Schemas\Pbjx\StreamId;
 
 class CreateAppHandler extends AbstractCreateNodeHandler
 {
+    use AppPbjxHelperTrait;
+
     /**
      * {@inheritdoc}
      */
@@ -38,27 +37,6 @@ class CreateAppHandler extends AbstractCreateNodeHandler
         /** @var App $node */
         $node = $event->get('node');
         $node->set('status', NodeStatus::PUBLISHED());
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function createNodeCreated(CreateNode $command, Pbjx $pbjx): NodeCreated
-    {
-        $curie = $command::schema()->getCurie();
-        $eventCurie = "{$curie->getVendor()}:{$curie->getPackage()}:event:app-created";
-
-        /** @var Event $class */
-        $class = MessageResolver::resolveCurie(SchemaCurie::fromString($eventCurie));
-        return $class::create();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function createStreamId(NodeRef $nodeRef, Command $command, Event $event): StreamId
-    {
-        return StreamId::fromString(sprintf('app.history:%s', $nodeRef->getId()));
     }
 
     /**

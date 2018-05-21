@@ -32,7 +32,7 @@ final class CreateAppHandlerTest extends AbstractPbjxTest
             $node = $event->get('node');
             $this->assertSame(NodeStatus::PUBLISHED(), $node->get('status'));
             $this->assertSame('test-android-app', $node->get('title'));
-            $this->assertSame(StreamId::fromString("app.history:{$expectedId}")->toString(), $streamId->toString());
+            $this->assertSame(StreamId::fromString("android-app.history:{$expectedId}")->toString(), $streamId->toString());
             $this->assertSame($event->generateMessageRef()->toString(), (string)$node->get('last_event_ref'));
         });
     }

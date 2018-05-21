@@ -52,7 +52,7 @@ final class UpdateAppHandlerTest extends AbstractPbjxTest
                 $this->assertSame(NodeStatus::PUBLISHED(), $newNodeFromEvent->get('status'));
                 $this->assertEquals('updated', $newNodeFromEvent->get('title'));
                 $this->assertNull($expectedRoles);
-                $this->assertSame(StreamId::fromString("app.history:{$expectedId}")->toString(), $streamId->toString());
+                $this->assertSame(StreamId::fromString("sms-app.history:{$expectedId}")->toString(), $streamId->toString());
                 $this->assertSame($event->generateMessageRef()->toString(), (string)$newNodeFromEvent->get('last_event_ref'));
             });
     }

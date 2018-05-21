@@ -1,15 +1,16 @@
 <?php
 declare(strict_types=1);
 
-namespace Gdbots\Iam;
+namespace Gdbots\Tests\Iam;
 
 use Acme\Schemas\Iam\Event\AppCreatedV1;
 use Acme\Schemas\Iam\Event\AppDeletedV1;
 use Acme\Schemas\Iam\Event\AppUpdatedV1;
 use Acme\Schemas\Iam\Request\GetAppHistoryRequestV1;
+use Acme\Schemas\Iam\Request\GetAppHistoryResponseV1;
+use Gdbots\Iam\GetAppHistoryRequestHandler;
 use Gdbots\Pbj\WellKnown\Microtime;
 use Gdbots\Schemas\Pbjx\StreamId;
-use Gdbots\Tests\Iam\AbstractPbjxTest;
 
 final class GetAppHistoryResquestHandlerTest extends AbstractPbjxTest
 {
@@ -18,14 +19,15 @@ final class GetAppHistoryResquestHandlerTest extends AbstractPbjxTest
      */
     public function testHandleRequest()
     {
-        $this->prepareEventsForStreamId('app.history:1234');
+        $this->prepareEventsForStreamId('ios-app.history:1234');
         // test default
         $request = GetAppHistoryRequestV1::fromArray([
-            'stream_id' => 'app.history:1234',
+            'stream_id' => 'ios-app.history:1234',
             'since'     => Microtime::create(),
         ]);
 
         $handler = new GetAppHistoryRequestHandler();
+        /** @var GetAppHistoryResponseV1 $response */
         $response = $handler->handleRequest($request, $this->pbjx);
         $events = $response->get('events');
 
@@ -41,15 +43,16 @@ final class GetAppHistoryResquestHandlerTest extends AbstractPbjxTest
      */
     public function testHandleRequestWithCount()
     {
-        $this->prepareEventsForStreamId('app.history:4321');
+        $this->prepareEventsForStreamId('android-app.history:4321');
         // test with count
         $request = GetAppHistoryRequestV1::fromArray([
-            'stream_id' => 'app.history:4321',
+            'stream_id' => 'android-app.history:4321',
             'since'     => Microtime::create(),
             'count'     => 2,
         ]);
 
         $handler = new GetAppHistoryRequestHandler();
+        /** @var GetAppHistoryResponseV1 $response */
         $response = $handler->handleRequest($request, $this->pbjx);
         $event = $response->get('events');
 
@@ -64,14 +67,15 @@ final class GetAppHistoryResquestHandlerTest extends AbstractPbjxTest
      */
     public function testHandleRequestWithForward()
     {
-        $this->prepareEventsForStreamId('app.history:0000');
+        $this->prepareEventsForStreamId('sms-app.history:0000');
         // test with forward
         $request = GetAppHistoryRequestV1::fromArray([
-            'stream_id' => 'app.history:0000',
+            'stream_id' => 'sms-app.history:0000',
             'forward'   => true,
         ]);
 
         $handler = new GetAppHistoryRequestHandler();
+        /** @var GetAppHistoryResponseV1 $response */
         $response = $handler->handleRequest($request, $this->pbjx);
         $event = $response->get('events');
 

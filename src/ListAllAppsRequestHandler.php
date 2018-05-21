@@ -5,6 +5,7 @@ namespace Gdbots\Iam;
 
 use Gdbots\Ncr\AbstractRequestHandler;
 use Gdbots\Ncr\Ncr;
+use Gdbots\Pbj\Schema;
 use Gdbots\Pbjx\Pbjx;
 use Gdbots\Schemas\Iam\Mixin\App\AppV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\ListAllAppsRequest\ListAllAppsRequest;
@@ -34,9 +35,10 @@ class ListAllAppsRequestHandler extends AbstractRequestHandler
     protected function handle(ListAllAppsRequest $request, Pbjx $pbjx): ListAllAppsResponse
     {
         $apps = [];
-        $allMixins = AppV1Mixin::findAll();
-        foreach ($allMixins as $mixin) {
-            $this->ncr->pipeNodeRefs($mixin->getQName(), function (NodeRef $nodeRef) use (&$apps) {
+        /** @var Schema $schemas */
+        $schemas = AppV1Mixin::findAll();
+        foreach ($schemas as $schema) {
+            $this->ncr->pipeNodeRefs($schema->getQName(), function (NodeRef $nodeRef) use (&$apps) {
                 $apps[] = $nodeRef;
             }, $this->createNcrContext($request));
         }
