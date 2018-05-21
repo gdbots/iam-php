@@ -28,16 +28,15 @@ class ListAllAppsRequestHandler extends AbstractRequestHandler
 
     /**
      * @param ListAllAppsRequest $request
-     * @param Pbjx                $pbjx
+     * @param Pbjx               $pbjx
      *
      * @return ListAllAppsResponse
      */
     protected function handle(ListAllAppsRequest $request, Pbjx $pbjx): ListAllAppsResponse
     {
         $apps = [];
-        /** @var Schema $schemas */
-        $schemas = AppV1Mixin::findAll();
-        foreach ($schemas as $schema) {
+        /** @var Schema $schema */
+        foreach (AppV1Mixin::findAll() as $schema) {
             $this->ncr->pipeNodeRefs($schema->getQName(), function (NodeRef $nodeRef) use (&$apps) {
                 $apps[] = $nodeRef;
             }, $this->createNcrContext($request));
@@ -48,7 +47,7 @@ class ListAllAppsRequestHandler extends AbstractRequestHandler
 
     /**
      * @param ListAllAppsRequest $request
-     * @param Pbjx                $pbjx
+     * @param Pbjx               $pbjx
      *
      * @return ListAllAppsResponse
      */

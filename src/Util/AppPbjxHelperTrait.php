@@ -5,10 +5,10 @@ namespace Gdbots\Iam\Util;
 
 use Gdbots\Pbj\MessageResolver;
 use Gdbots\Pbj\SchemaCurie;
+use Gdbots\Schemas\Iam\Mixin\App\App;
 use Gdbots\Schemas\Ncr\Mixin\Node\Node;
 use Gdbots\Schemas\Pbjx\Mixin\Command\Command;
 use Gdbots\Schemas\Pbjx\Mixin\Event\Event;
-use Gdbots\Schemas\Iam\Mixin\App\App;
 
 trait AppPbjxHelperTrait
 {
@@ -24,7 +24,7 @@ trait AppPbjxHelperTrait
 
     /**
      * @param Command $command
-     * @param string $suffix
+     * @param string  $suffix
      *
      * @return Event
      */

@@ -5,19 +5,14 @@ namespace Gdbots\Iam;
 
 use Gdbots\Iam\Util\AppPbjxHelperTrait;
 use Gdbots\Ncr\AbstractUpdateNodeHandler;
-use Gdbots\Pbj\MessageResolver;
+use Gdbots\Pbj\Schema;
 use Gdbots\Pbj\SchemaCurie;
 use Gdbots\Pbjx\Pbjx;
 use Gdbots\Schemas\Iam\Mixin\App\App;
 use Gdbots\Schemas\Iam\Mixin\App\AppV1Mixin;
 use Gdbots\Schemas\Ncr\Enum\NodeStatus;
-use Gdbots\Schemas\Ncr\Mixin\Node\Node;
 use Gdbots\Schemas\Ncr\Mixin\NodeUpdated\NodeUpdated;
 use Gdbots\Schemas\Ncr\Mixin\UpdateNode\UpdateNode;
-use Gdbots\Schemas\Ncr\NodeRef;
-use Gdbots\Schemas\Pbjx\Mixin\Command\Command;
-use Gdbots\Schemas\Pbjx\Mixin\Event\Event;
-use Gdbots\Schemas\Pbjx\StreamId;
 
 class UpdateAppHandler extends AbstractUpdateNodeHandler
 {
@@ -32,8 +27,11 @@ class UpdateAppHandler extends AbstractUpdateNodeHandler
 
         /** @var App $newNode */
         $newNode = $event->get('new_node');
-        // a app can only be "published"
-        $newNode->set('status', NodeStatus::PUBLISHED());
+
+        // apps are only published or deleted, enforce it.
+        if (!NodeStatus::DELETED()->equals($newNode->get('status'))) {
+            $newNode->set('status', NodeStatus::PUBLISHED());
+        }
     }
 
     /**
@@ -41,7 +39,9 @@ class UpdateAppHandler extends AbstractUpdateNodeHandler
      */
     public static function handlesCuries(): array
     {
-        $curie = AppV1Mixin::findOne()->getCurie();
+        /** @var Schema $schema */
+        $schema = AppV1Mixin::findAll()[0];
+        $curie = $schema->getCurie();
         return [
             SchemaCurie::fromString("{$curie->getVendor()}:{$curie->getPackage()}:command:update-app"),
         ];

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Gdbots\Iam;
 
 use Gdbots\Ncr\AbstractNodeProjector;
+use Gdbots\Pbj\Schema;
 use Gdbots\Pbjx\EventSubscriber;
 use Gdbots\Pbjx\EventSubscriberTrait;
 use Gdbots\Pbjx\Pbjx;
@@ -24,7 +25,9 @@ class NcrAppProjector extends AbstractNodeProjector implements EventSubscriber
      */
     public static function getSubscribedEvents()
     {
-        $curie = AppV1Mixin::findOne()->getCurie();
+        /** @var Schema $schema */
+        $schema = AppV1Mixin::findAll()[0];
+        $curie = $schema->getCurie();
         return [
             "{$curie->getVendor()}:{$curie->getPackage()}:event:*" => 'onEvent',
         ];
@@ -50,7 +53,7 @@ class NcrAppProjector extends AbstractNodeProjector implements EventSubscriber
 
     /**
      * @param AppRolesGranted $event
-     * @param Pbjx             $pbjx
+     * @param Pbjx            $pbjx
      */
     public function onAppRolesGranted(AppRolesGranted $event, Pbjx $pbjx): void
     {
@@ -63,7 +66,7 @@ class NcrAppProjector extends AbstractNodeProjector implements EventSubscriber
 
     /**
      * @param AppRolesRevoked $event
-     * @param Pbjx             $pbjx
+     * @param Pbjx            $pbjx
      */
     public function onAppRolesRevoked(AppRolesRevoked $event, Pbjx $pbjx): void
     {

@@ -7,11 +7,11 @@ use Gdbots\Iam\Util\AppPbjxHelperTrait;
 use Gdbots\Ncr\AbstractNodeCommandHandler;
 use Gdbots\Ncr\Ncr;
 use Gdbots\Pbjx\Pbjx;
+use Gdbots\Schemas\Iam\Mixin\AppRolesRevoked\AppRolesRevoked;
+use Gdbots\Schemas\Iam\Mixin\AppRolesRevoked\AppRolesRevokedV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\RevokeRolesFromApp\RevokeRolesFromApp;
 use Gdbots\Schemas\Iam\Mixin\RevokeRolesFromApp\RevokeRolesFromAppV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\Role\RoleV1Mixin;
-use Gdbots\Schemas\Iam\Mixin\AppRolesRevoked\AppRolesRevoked;
-use Gdbots\Schemas\Iam\Mixin\AppRolesRevoked\AppRolesRevokedV1Mixin;
 use Gdbots\Schemas\Ncr\NodeRef;
 
 class RevokeRolesFromAppHandler extends AbstractNodeCommandHandler
@@ -31,7 +31,7 @@ class RevokeRolesFromAppHandler extends AbstractNodeCommandHandler
 
     /**
      * @param RevokeRolesFromApp $command
-     * @param Pbjx                $pbjx
+     * @param Pbjx               $pbjx
      */
     protected function handle(RevokeRolesFromApp $command, Pbjx $pbjx): void
     {
@@ -61,7 +61,7 @@ class RevokeRolesFromAppHandler extends AbstractNodeCommandHandler
 
     /**
      * @param RevokeRolesFromApp $command
-     * @param Pbjx                $pbjx
+     * @param Pbjx               $pbjx
      *
      * @return AppRolesRevoked
      */

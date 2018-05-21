@@ -3,17 +3,7 @@ This changelog references the relevant changes done in 0.x versions.
 
 
 ## v0.4.1
-* Add `AppPbjxHelperTrait`.
-* Add app handlers.
-  * `CreateAppHandler`.
-  * `DeleteAppHandler`.
-  * `GetAppHistoryRequestHandler`.
-  * `GetAppRequestHandler`.
-  * `GrantRolesToAppHandler`.
-  * `ListAllAppsRequestHandler`.
-  * `RevokeRolesFromAppHandler`.
-  * `UpdateAppHandler`.
-* Add `NcrAppProjector`.
+* Add crud handlers and projector for `gdbots:iam:mixin:app`.
 
 
 ## v0.4.0

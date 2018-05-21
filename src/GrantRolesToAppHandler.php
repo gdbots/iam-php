@@ -31,7 +31,7 @@ class GrantRolesToAppHandler extends AbstractNodeCommandHandler
 
     /**
      * @param GrantRolesToApp $command
-     * @param Pbjx             $pbjx
+     * @param Pbjx            $pbjx
      */
     protected function handle(GrantRolesToApp $command, Pbjx $pbjx): void
     {
@@ -61,7 +61,7 @@ class GrantRolesToAppHandler extends AbstractNodeCommandHandler
 
     /**
      * @param GrantRolesToApp $command
-     * @param Pbjx             $pbjx
+     * @param Pbjx            $pbjx
      *
      * @return AppRolesGranted
      */
