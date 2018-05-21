@@ -2,6 +2,20 @@
 This changelog references the relevant changes done in 0.x versions.
 
 
+## v0.4.1
+* Add `AppPbjxHelperTrait`.
+* Add app handlers.
+  * `CreateAppHandler`.
+  * `DeleteAppHandler`.
+  * `GetAppHistoryRequestHandler`.
+  * `GetAppRequestHandler`.
+  * `GrantRolesToAppHandler`.
+  * `ListAllAppsRequestHandler`.
+  * `RevokeRolesFromAppHandler`.
+  * `UpdateAppHandler`.
+* Add `NcrAppProjector`.
+
+
 ## v0.4.0
 __BREAKING CHANGES__
 
