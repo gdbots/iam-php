@@ -43,8 +43,6 @@ final class AppProjectorTest extends AbstractPbjxTest
         $nodeRef = NodeRef::fromNode($app);
         $event = AppCreatedV1::create()->set('node', $app);
 
-        $this->ncrSearch->expects($this->once())->method('indexNodes');
-
         $this->appProjector->onAppCreated($event, $this->pbjx);
         $getApp = $this->ncr->getNode($nodeRef);
 
@@ -57,8 +55,6 @@ final class AppProjectorTest extends AbstractPbjxTest
         $nodeRef = NodeRef::fromNode($app);
         $event = AppCreatedV1::create()->set('node', $app);
         $event->isReplay(true);
-
-        $this->ncrSearch->expects($this->never())->method('indexNodes');
 
         $this->appProjector->onAppCreated($event, $this->pbjx);
         $getApp = $this->ncr->getNode($nodeRef);
@@ -84,8 +80,6 @@ final class AppProjectorTest extends AbstractPbjxTest
             ->set('old_etag', $oldApp->get('etag'))
             ->set('new_etag', $newApp->get('etag'))
             ->set('node_ref', $nodeRef);
-
-        $this->ncrSearch->expects($this->once())->method('indexNodes');
 
         $this->appProjector->onAppUpdated($event, $this->pbjx);
         $getApp = $this->ncr->getNode($nodeRef);
@@ -114,8 +108,6 @@ final class AppProjectorTest extends AbstractPbjxTest
             ->set('new_etag', $newApp->get('etag'))
             ->set('node_ref', $nodeRef);
         $event->isReplay(true);
-
-        $this->ncrSearch->expects($this->never())->method('indexNodes');
 
         $this->appProjector->onAppUpdated($event, $this->pbjx);
         $getApp = $this->ncr->getNode($nodeRef);

@@ -14,7 +14,9 @@ use Gdbots\Schemas\Ncr\Mixin\Node\Node;
 use Gdbots\Schemas\Ncr\Mixin\NodeUpdated\NodeUpdated;
 use Gdbots\Schemas\Ncr\Mixin\UpdateNode\UpdateNode;
 use Gdbots\Schemas\Ncr\NodeRef;
+use Gdbots\Schemas\Pbjx\Mixin\Command\Command;
 use Gdbots\Schemas\Pbjx\Mixin\Event\Event;
+use Gdbots\Schemas\Pbjx\StreamId;
 
 class UpdateAppHandler extends AbstractUpdateNodeHandler
 {
@@ -52,6 +54,14 @@ class UpdateAppHandler extends AbstractUpdateNodeHandler
         /** @var Event $class */
         $class = MessageResolver::resolveCurie(SchemaCurie::fromString($eventCurie));
         return $class::create();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function createStreamId(NodeRef $nodeRef, Command $command, Event $event): StreamId
+    {
+        return StreamId::fromString(sprintf('app.history:%s', $nodeRef->getId()));
     }
 
     /**
