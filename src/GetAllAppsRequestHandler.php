@@ -38,9 +38,8 @@ class GetAllAppsRequestHandler extends AbstractRequestHandler
         $apps = [];
         /** @var Schema $schema */
         foreach (AppV1Mixin::findAll() as $schema) {
-            // why pipeNodes returns nodes from other schema qname.
             $this->ncr->pipeNodes($schema->getQName(), function (Node $node) use (&$apps) {
-                $apps[NodeRef::fromNode($node)->toString()] = $node;
+                $apps[] = $node;
             }, $this->createNcrContext($request));
         }
 
