@@ -12,7 +12,7 @@ use Gdbots\Ncr\NcrSearch;
 use Gdbots\Schemas\Iam\RoleId;
 use Gdbots\Schemas\Ncr\NodeRef;
 
-final class RoleProjectorTest extends AbstractPbjxTest
+final class NcrRoleProjectorTest extends AbstractPbjxTest
 {
     /** @var NcrRoleProjector */
     protected $roleProjecter;
