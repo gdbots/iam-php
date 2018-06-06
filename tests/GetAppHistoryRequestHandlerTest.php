@@ -12,7 +12,7 @@ use Gdbots\Iam\GetAppHistoryRequestHandler;
 use Gdbots\Pbj\WellKnown\Microtime;
 use Gdbots\Schemas\Pbjx\StreamId;
 
-final class GetAppHistoryResquestHandlerTest extends AbstractPbjxTest
+final class GetAppHistoryRequestHandlerTest extends AbstractPbjxTest
 {
     /**
      * testHandleRequest. Test with default args
