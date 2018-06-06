@@ -25,9 +25,9 @@ final class UpdateAppHandlerTest extends AbstractPbjxTest
         $this->ncr->putNode($oldNode);
 
         $newNode = SmsAppV1::fromArray([
-            '_id'        => '7afcc2f1-9654-46d1-8fc1-b0511df257db',
-            'title'      => 'updated',
-            'roles'      => ['acme:role:tester'],
+            '_id'   => '7afcc2f1-9654-46d1-8fc1-b0511df257db',
+            'title' => 'updated',
+            'roles' => ['acme:role:tester'],
         ]);
 
         $command->set('node_ref', NodeRef::fromNode($oldNode));

@@ -12,7 +12,6 @@ use Gdbots\Schemas\Iam\Mixin\GetAllAppsRequest\GetAllAppsRequest;
 use Gdbots\Schemas\Iam\Mixin\GEtAllAppsRequest\GetAllAppsRequestV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\GetAllAppsResponse\GetAllAppsResponse;
 use Gdbots\Schemas\Ncr\Mixin\Node\Node;
-use Gdbots\Schemas\Ncr\NodeRef;
 
 class GetAllAppsRequestHandler extends AbstractRequestHandler
 {
@@ -29,7 +28,7 @@ class GetAllAppsRequestHandler extends AbstractRequestHandler
 
     /**
      * @param GetAllAppsRequest $request
-     * @param Pbjx               $pbjx
+     * @param Pbjx              $pbjx
      *
      * @return GetAllAppsResponse
      */
@@ -48,7 +47,7 @@ class GetAllAppsRequestHandler extends AbstractRequestHandler
 
     /**
      * @param GetAllAppsRequest $request
-     * @param Pbjx               $pbjx
+     * @param Pbjx              $pbjx
      *
      * @return GetAllAppsResponse
      */

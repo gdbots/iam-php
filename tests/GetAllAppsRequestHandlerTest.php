@@ -34,6 +34,7 @@ final class GetAllAppsRequestHandlerTest extends AbstractPbjxTest
 
     /**
      * Creates a node and put it to NCR
+     *
      * @param string $id
      *
      * @return Node

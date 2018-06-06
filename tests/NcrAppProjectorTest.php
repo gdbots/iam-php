@@ -8,15 +8,15 @@ use Acme\Schemas\Iam\Event\AppDeletedV1;
 use Acme\Schemas\Iam\Event\AppRolesGrantedV1;
 use Acme\Schemas\Iam\Event\AppRolesRevokedV1;
 use Acme\Schemas\Iam\Event\AppUpdatedV1;
-use Acme\Schemas\Iam\Node\RoleV1;
 use Acme\Schemas\Iam\Node\BrowserAppV1;
+use Acme\Schemas\Iam\Node\RoleV1;
 use Gdbots\Iam\NcrAppProjector;
 use Gdbots\Ncr\NcrSearch;
 use Gdbots\Schemas\Iam\RoleId;
 use Gdbots\Schemas\Ncr\Enum\NodeStatus;
 use Gdbots\Schemas\Ncr\NodeRef;
 
-final class AppProjectorTest extends AbstractPbjxTest
+final class NcrAppProjectorTest extends AbstractPbjxTest
 {
     /** @var NcrAppProjector */
     protected $appProjector;
