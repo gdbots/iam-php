@@ -2,6 +2,10 @@
 This changelog references the relevant changes done in 0.x versions.
 
 
+## v0.4.2
+* Fix invalid class reference in `GetAllAppsRequestHandler`.
+
+
 ## v0.4.1
 * Add crud handlers and projector for `gdbots:iam:mixin:app`.
 

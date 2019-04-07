@@ -9,7 +9,7 @@ use Gdbots\Pbj\Schema;
 use Gdbots\Pbjx\Pbjx;
 use Gdbots\Schemas\Iam\Mixin\App\AppV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\GetAllAppsRequest\GetAllAppsRequest;
-use Gdbots\Schemas\Iam\Mixin\GEtAllAppsRequest\GetAllAppsRequestV1Mixin;
+use Gdbots\Schemas\Iam\Mixin\GetAllAppsRequest\GetAllAppsRequestV1Mixin;
 use Gdbots\Schemas\Iam\Mixin\GetAllAppsResponse\GetAllAppsResponse;
 use Gdbots\Schemas\Ncr\Mixin\Node\Node;
 
