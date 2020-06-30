@@ -11,19 +11,12 @@ use PHPUnit\Framework\TestCase;
 
 abstract class AbstractPbjxTest extends TestCase
 {
-    /** @var RegisteringServiceLocator */
-    protected $locator;
+    protected RegisteringServiceLocator $locator;
+    protected Pbjx $pbjx;
+    protected InMemoryEventStore $eventStore;
+    protected InMemoryNcr $ncr;
 
-    /** @var Pbjx */
-    protected $pbjx;
-
-    /** @var InMemoryEventStore */
-    protected $eventStore;
-
-    /** @var InMemoryNcr */
-    protected $ncr;
-
-    protected function setup()
+    protected function setUp(): void
     {
         $this->locator = new RegisteringServiceLocator();
         $this->pbjx = $this->locator->getPbjx();

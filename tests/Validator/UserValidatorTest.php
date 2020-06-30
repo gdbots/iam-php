@@ -13,7 +13,7 @@ use Gdbots\Tests\Iam\AbstractPbjxTest;
 
 final class UserValidatorTest extends AbstractPbjxTest
 {
-    public function setup()
+    public function setUp(): void
     {
         parent::setup();
 

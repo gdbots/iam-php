@@ -17,9 +17,9 @@ use Gdbots\Tests\Iam\AbstractPbjxTest;
 
 final class UniqueRoleValidatorTest extends AbstractPbjxTest
 {
-    public function setup()
+    public function setUp(): void
     {
-        parent::setup();
+        parent::setUp();
 
         // prepare request handlers that this test case requires
         PbjxEvent::setPbjx($this->pbjx);

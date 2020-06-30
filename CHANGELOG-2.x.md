@@ -7,3 +7,4 @@ __BREAKING CHANGES__
 
 * Upgrade to support PHP 7.4.
 * Uses `"gdbots/ncr": "^2.0"`
+* Implement aggregates and remove command handlers for common gdbots:ncr operations.

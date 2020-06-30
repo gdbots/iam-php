@@ -15,7 +15,7 @@ use Gdbots\Tests\Iam\AbstractPbjxTest;
 
 final class UniqueUserValidatorTest extends AbstractPbjxTest
 {
-    public function setup()
+    public function setUp(): void
     {
         parent::setup();
 
