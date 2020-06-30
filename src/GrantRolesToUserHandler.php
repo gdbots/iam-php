@@ -3,89 +3,45 @@ declare(strict_types=1);
 
 namespace Gdbots\Iam;
 
-use Gdbots\Ncr\AbstractNodeCommandHandler;
+use Gdbots\Ncr\AggregateResolver;
 use Gdbots\Ncr\Ncr;
+use Gdbots\Pbj\Message;
+use Gdbots\Pbj\MessageResolver;
+use Gdbots\Pbj\WellKnown\NodeRef;
+use Gdbots\Pbjx\CommandHandler;
 use Gdbots\Pbjx\Pbjx;
-use Gdbots\Schemas\Iam\Mixin\GrantRolesToUser\GrantRolesToUser;
+use Gdbots\Schemas\Iam\Command\GrantRolesToUserV1;
 use Gdbots\Schemas\Iam\Mixin\GrantRolesToUser\GrantRolesToUserV1Mixin;
-use Gdbots\Schemas\Iam\Mixin\Role\RoleV1Mixin;
-use Gdbots\Schemas\Iam\Mixin\User\User;
-use Gdbots\Schemas\Iam\Mixin\UserRolesGranted\UserRolesGranted;
-use Gdbots\Schemas\Iam\Mixin\UserRolesGranted\UserRolesGrantedV1Mixin;
-use Gdbots\Schemas\Ncr\Mixin\Node\Node;
-use Gdbots\Schemas\Ncr\NodeRef;
 
-class GrantRolesToUserHandler extends AbstractNodeCommandHandler
+class GrantRolesToUserHandler implements CommandHandler
 {
-    /** @var Ncr */
-    protected $ncr;
+    protected Ncr $ncr;
 
-    /**
-     * @param Ncr $ncr
-     */
+    public static function handlesCuries(): array
+    {
+        // deprecated mixins, will be removed in 3.x
+        $curies = MessageResolver::findAllUsingMixin(GrantRolesToUserV1Mixin::SCHEMA_CURIE, false);
+        $curies[] = GrantRolesToUserV1::SCHEMA_CURIE;
+        return $curies;
+    }
+
     public function __construct(Ncr $ncr)
     {
         $this->ncr = $ncr;
     }
 
-    /**
-     * @param GrantRolesToUser $command
-     * @param Pbjx             $pbjx
-     */
-    protected function handle(GrantRolesToUser $command, Pbjx $pbjx): void
+    public function handleCommand(Message $command, Pbjx $pbjx): void
     {
         /** @var NodeRef $nodeRef */
-        $nodeRef = $command->get('node_ref');
-        $node = $this->ncr->getNode($nodeRef, true, $this->createNcrContext($command));
-        $this->assertIsNodeSupported($node);
+        $nodeRef = $command->get(GrantRolesToUserV1::NODE_REF_FIELD);
+        $context = ['causator' => $command];
 
-        $event = $this->createUserRolesGranted($command, $pbjx);
-        $pbjx->copyContext($command, $event);
-        $event->set('node_ref', $nodeRef);
+        $node = $this->ncr->getNode($nodeRef, true, $context);
 
-        $roles = [];
-        $roleQname = RoleV1Mixin::findOne()->getQName();
-        /** @var NodeRef $ref */
-        foreach ($command->get('roles', []) as $ref) {
-            if ($ref->getQName() === $roleQname) {
-                $roles[] = $ref;
-            }
-        }
-
-        $event->addToSet('roles', $roles);
-
-        $this->bindFromNode($event, $node, $pbjx);
-        $this->putEvents($command, $pbjx, $this->createStreamId($nodeRef, $command, $event), [$event]);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function isNodeSupported(Node $node): bool
-    {
-        return $node instanceof User;
-    }
-
-    /**
-     * @param GrantRolesToUser $command
-     * @param Pbjx             $pbjx
-     *
-     * @return UserRolesGranted
-     */
-    protected function createUserRolesGranted(GrantRolesToUser $command, Pbjx $pbjx): UserRolesGranted
-    {
-        /** @var UserRolesGranted $event */
-        $event = UserRolesGrantedV1Mixin::findOne()->createMessage();
-        return $event;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function handlesCuries(): array
-    {
-        return [
-            GrantRolesToUserV1Mixin::findOne()->getCurie(),
-        ];
+        /** @var UserAggregate $aggregate */
+        $aggregate = AggregateResolver::resolve($nodeRef->getQName())::fromNode($node, $pbjx);
+        $aggregate->sync($context);
+        $aggregate->grantRolesToUser($command);
+        $aggregate->commit($context);
     }
 }
