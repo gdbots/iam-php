@@ -5,7 +5,7 @@ namespace Gdbots\Tests\Iam;
 
 use Acme\Schemas\Iam\Node\RoleV1;
 use Gdbots\Iam\Policy;
-use Gdbots\Schemas\Iam\Mixin\Role\Role;
+use Gdbots\Pbj\Message;
 use Gdbots\Schemas\Iam\RoleId;
 use PHPUnit\Framework\TestCase;
 
@@ -14,12 +14,12 @@ final class PolicyTest extends TestCase
     /**
      * @dataProvider getIsGrantedSamples
      *
-     * @param string $name
-     * @param string $action
-     * @param Role[] $roles
-     * @param bool   $expected
+     * @param string    $name
+     * @param string    $action
+     * @param Message[] $roles
+     * @param bool      $expected
      */
-    public function testIsGranted(string $name, string $action, array $roles = [], bool $expected)
+    public function testIsGranted(string $name, string $action, array $roles, bool $expected): void
     {
         $policy = new Policy($roles);
         $this->assertEquals($expected, $policy->isGranted($action), "Test policy [{$name}] failed.");
@@ -28,12 +28,12 @@ final class PolicyTest extends TestCase
     /**
      * @dataProvider getHasRoleSamples
      *
-     * @param string $name
-     * @param array  $roles
-     * @param string $role
-     * @param bool   $expected
+     * @param string    $name
+     * @param Message[] $roles
+     * @param string    $role
+     * @param bool      $expected
      */
-    public function testHasRoles(string $name, array $roles = [], string $role, bool $expected)
+    public function testHasRoles(string $name, array $roles, string $role, bool $expected)
     {
         $policy = new Policy($roles);
         $this->assertEquals($expected, $policy->hasRole(RoleId::create($role)), "Test policy [{$name}] failed");
@@ -146,6 +146,18 @@ final class PolicyTest extends TestCase
                         ->set('_id', RoleId::fromString('test1'))
                         ->addToSet('allowed', ['acme:blog:command:create-article'])
                         ->addToSet('denied', ['acme:blog:command:*']),
+                ],
+                'expected' => false,
+            ],
+
+            [
+                'name'     => 'action allowed with deny on command level',
+                'action'   => 'acme:blog:command:create-article',
+                'roles'    => [
+                    RoleV1::create()
+                        ->set('_id', RoleId::fromString('test1'))
+                        ->addToSet('allowed', ['acme:article:create'])
+                        ->addToSet('denied', ['acme:article:*']),
                 ],
                 'expected' => false,
             ],
