@@ -58,6 +58,7 @@ final class UserValidatorTest extends AbstractPbjxTest
         $validator = new UserValidator();
         $pbjxEvent = new PbjxEvent($command);
         $validator->validate($pbjxEvent);
+        $validator->validate($pbjxEvent->createChildEvent($newNode));
 
         // if it gets here it's a pass
         $this->assertTrue(true);
