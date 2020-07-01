@@ -3,19 +3,16 @@ declare(strict_types=1);
 
 namespace Gdbots\Iam;
 
-use Gdbots\Schemas\Iam\Mixin\Role\Role;
+use Gdbots\Pbj\Message;
+use Gdbots\Schemas\Iam\Mixin\Role\RoleV1Mixin;
 use Gdbots\Schemas\Iam\RoleId;
+use Gdbots\Schemas\Ncr\Mixin\Node\NodeV1Mixin;
 
 final class Policy implements \JsonSerializable
 {
-    /** @var Role[] */
-    private $roles = [];
-
-    /** @var string[] */
-    private $allowed = [];
-
-    /** @var string[] */
-    private $denied = [];
+    private array $roles = [];
+    private array $allowed = [];
+    private array $denied = [];
 
     /** delimiter used for action */
     private const DELIMITER = ':';
@@ -24,14 +21,14 @@ final class Policy implements \JsonSerializable
     private const WILDCARD = '*';
 
     /**
-     * @param Role[] $roles
+     * @param Message[] $roles
      */
     public function __construct(array $roles = [])
     {
         foreach ($roles as $role) {
-            $this->roles[(string)$role->get('_id')] = $role;
-            $this->allowed = array_merge($this->allowed, $role->get('allowed', []));
-            $this->denied = array_merge($this->denied, $role->get('denied', []));
+            $this->roles[$role->fget(NodeV1Mixin::_ID_FIELD)] = true;
+            $this->allowed = array_merge($this->allowed, $role->fget(RoleV1Mixin::ALLOWED_FIELD, []));
+            $this->denied = array_merge($this->denied, $role->fget(RoleV1Mixin::DENIED_FIELD, []));
         }
 
         $this->allowed = array_flip($this->allowed);
@@ -41,13 +38,13 @@ final class Policy implements \JsonSerializable
     /**
      * Returns true if the policy include the provided role.
      *
-     * @param RoleId $id
+     * @param RoleId|string $id
      *
      * @return bool
      */
-    public function hasRole(RoleId $id): bool
+    public function hasRole($id): bool
     {
-        return isset($this->roles[$id->toString()]);
+        return isset($this->roles[(string)$id]);
     }
 
     /**
@@ -85,9 +82,6 @@ final class Policy implements \JsonSerializable
         return false;
     }
 
-    /**
-     * @return array
-     */
     public function jsonSerialize()
     {
         return [
@@ -97,9 +91,6 @@ final class Policy implements \JsonSerializable
         ];
     }
 
-    /**
-     * @return string
-     */
     public function __toString()
     {
         return json_encode($this);
@@ -109,20 +100,20 @@ final class Policy implements \JsonSerializable
      * Converts an action with potentially colon delimiters
      * into a set of permissions to check for.
      *
+     * @param string $action
+     *
+     * @return string[]
      * @example
-     * An action of "acme:blog:command:publish-article" becomes
-     * an array of:
-     * [
+     *   An action of "acme:blog:command:publish-article" becomes
+     *   an array of:
+     *   [
      *   '*',
      *   'acme:*',
      *   'acme:blog:*',
      *   'acme:blog:command:*',
      *   'acme:blog:command:publish-article',
-     * ]
+     *   ]
      *
-     * @param string $action
-     *
-     * @return string[]
      */
     private function getRules(string $action): array
     {

@@ -3,82 +3,45 @@ declare(strict_types=1);
 
 namespace Gdbots\Iam;
 
-use Gdbots\Iam\Util\AppPbjxHelperTrait;
-use Gdbots\Ncr\AbstractNodeCommandHandler;
+use Gdbots\Ncr\AggregateResolver;
 use Gdbots\Ncr\Ncr;
+use Gdbots\Pbj\Message;
+use Gdbots\Pbj\MessageResolver;
+use Gdbots\Pbj\WellKnown\NodeRef;
+use Gdbots\Pbjx\CommandHandler;
 use Gdbots\Pbjx\Pbjx;
-use Gdbots\Schemas\Iam\Mixin\AppRolesRevoked\AppRolesRevoked;
-use Gdbots\Schemas\Iam\Mixin\AppRolesRevoked\AppRolesRevokedV1Mixin;
-use Gdbots\Schemas\Iam\Mixin\RevokeRolesFromApp\RevokeRolesFromApp;
+use Gdbots\Schemas\Iam\Command\RevokeRolesFromAppV1;
 use Gdbots\Schemas\Iam\Mixin\RevokeRolesFromApp\RevokeRolesFromAppV1Mixin;
-use Gdbots\Schemas\Iam\Mixin\Role\RoleV1Mixin;
-use Gdbots\Schemas\Ncr\NodeRef;
 
-class RevokeRolesFromAppHandler extends AbstractNodeCommandHandler
+class RevokeRolesFromAppHandler implements CommandHandler
 {
-    use AppPbjxHelperTrait;
+    protected Ncr $ncr;
 
-    /** @var Ncr */
-    protected $ncr;
+    public static function handlesCuries(): array
+    {
+        // deprecated mixins, will be removed in 3.x
+        $curies = MessageResolver::findAllUsingMixin(RevokeRolesFromAppV1Mixin::SCHEMA_CURIE_MAJOR, false);
+        $curies[] = RevokeRolesFromAppV1::SCHEMA_CURIE;
+        return $curies;
+    }
 
-    /**
-     * @param Ncr $ncr
-     */
     public function __construct(Ncr $ncr)
     {
         $this->ncr = $ncr;
     }
 
-    /**
-     * @param RevokeRolesFromApp $command
-     * @param Pbjx               $pbjx
-     */
-    protected function handle(RevokeRolesFromApp $command, Pbjx $pbjx): void
+    public function handleCommand(Message $command, Pbjx $pbjx): void
     {
         /** @var NodeRef $nodeRef */
-        $nodeRef = $command->get('node_ref');
-        $node = $this->ncr->getNode($nodeRef, true, $this->createNcrContext($command));
-        $this->assertIsNodeSupported($node);
+        $nodeRef = $command->get(RevokeRolesFromAppV1::NODE_REF_FIELD);
+        $context = ['causator' => $command];
 
-        $event = $this->createAppRolesRevoked($command, $pbjx);
-        $pbjx->copyContext($command, $event);
-        $event->set('node_ref', $nodeRef);
+        $node = $this->ncr->getNode($nodeRef, true, $context);
 
-        $roles = [];
-        $roleQname = RoleV1Mixin::findOne()->getQName();
-        /** @var NodeRef $ref */
-        foreach ($command->get('roles', []) as $ref) {
-            if ($ref->getQName() === $roleQname) {
-                $roles[] = $ref;
-            }
-        }
-
-        $event->addToSet('roles', $roles);
-
-        $this->bindFromNode($event, $node, $pbjx);
-        $this->putEvents($command, $pbjx, $this->createStreamId($nodeRef, $command, $event), [$event]);
-    }
-
-    /**
-     * @param RevokeRolesFromApp $command
-     * @param Pbjx               $pbjx
-     *
-     * @return AppRolesRevoked
-     */
-    protected function createAppRolesRevoked(RevokeRolesFromApp $command, Pbjx $pbjx): AppRolesRevoked
-    {
-        /** @var AppRolesRevoked $event */
-        $event = AppRolesRevokedV1Mixin::findOne()->createMessage();
-        return $event;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function handlesCuries(): array
-    {
-        return [
-            RevokeRolesFromAppV1Mixin::findOne()->getCurie(),
-        ];
+        /** @var AppAggregate $aggregate */
+        $aggregate = AggregateResolver::resolve($nodeRef->getQName())::fromNode($node, $pbjx);
+        $aggregate->sync($context);
+        $aggregate->revokeRolesFromApp($command);
+        $aggregate->commit($context);
     }
 }

@@ -1,19 +1,19 @@
 <?php
 declare(strict_types=1);
 
-namespace Gdbots\Tests\Iam\Validator;
+namespace Gdbots\Tests\Iam;
 
-use Acme\Schemas\Iam\Command\CreateUserV1;
 use Acme\Schemas\Iam\Node\UserV1;
-use Acme\Schemas\Iam\Request\GetUserRequestV1;
+use Gdbots\Iam\Exception\UserAlreadyExists;
 use Gdbots\Iam\GetUserRequestHandler;
-use Gdbots\Iam\Validator\UserValidator;
+use Gdbots\Iam\UserValidator;
 use Gdbots\Pbjx\Event\PbjxEvent;
-use Gdbots\Tests\Iam\AbstractPbjxTest;
+use Gdbots\Schemas\Iam\Request\GetUserRequestV1;
+use Gdbots\Schemas\Ncr\Command\CreateNodeV1;
 
 final class UserValidatorTest extends AbstractPbjxTest
 {
-    public function setup()
+    public function setUp(): void
     {
         parent::setup();
 
@@ -25,12 +25,10 @@ final class UserValidatorTest extends AbstractPbjxTest
         );
     }
 
-    /**
-     * @expectedException \Gdbots\Iam\Exception\UserAlreadyExists
-     */
     public function testValidateCreateUserThatDoesExistByEmail(): void
     {
-        $command = CreateUserV1::create();
+        $this->expectException(UserAlreadyExists::class);
+        $command = CreateNodeV1::create();
         $existingNode = UserV1::fromArray([
             '_id'    => '7afcc2f1-9654-46d1-8fc1-b0511df257db',
             'email'  => 'homer@simpson.com',
@@ -45,12 +43,12 @@ final class UserValidatorTest extends AbstractPbjxTest
 
         $validator = new UserValidator();
         $pbjxEvent = new PbjxEvent($command);
-        $validator->validateCreateUser($pbjxEvent);
+        $validator->validate($pbjxEvent);
     }
 
     public function testValidateCreateUserThatDoesNotExistByEmail(): void
     {
-        $command = CreateUserV1::create();
+        $command = CreateNodeV1::create();
         $newNode = UserV1::fromArray([
             '_id'   => '8466a862-2a53-43a4-ade2-25b63e0cab94',
             'email' => 'homer@simpson.com',
@@ -59,7 +57,8 @@ final class UserValidatorTest extends AbstractPbjxTest
 
         $validator = new UserValidator();
         $pbjxEvent = new PbjxEvent($command);
-        $validator->validateCreateUser($pbjxEvent);
+        $validator->validate($pbjxEvent);
+        $validator->validate($pbjxEvent->createChildEvent($newNode));
 
         // if it gets here it's a pass
         $this->assertTrue(true);

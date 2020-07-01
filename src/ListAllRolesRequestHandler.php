@@ -3,64 +3,51 @@ declare(strict_types=1);
 
 namespace Gdbots\Iam;
 
-use Gdbots\Ncr\AbstractRequestHandler;
-use Gdbots\Ncr\Ncr;
+use Gdbots\Pbj\Message;
+use Gdbots\Pbj\MessageResolver;
 use Gdbots\Pbjx\Pbjx;
-use Gdbots\Schemas\Iam\Mixin\ListAllRolesRequest\ListAllRolesRequest;
+use Gdbots\Pbjx\RequestHandler;
 use Gdbots\Schemas\Iam\Mixin\ListAllRolesRequest\ListAllRolesRequestV1Mixin;
-use Gdbots\Schemas\Iam\Mixin\ListAllRolesResponse\ListAllRolesResponse;
-use Gdbots\Schemas\Iam\Mixin\Role\RoleV1Mixin;
-use Gdbots\Schemas\Ncr\NodeRef;
+use Gdbots\Schemas\Iam\Mixin\ListAllRolesResponse\ListAllRolesResponseV1Mixin;
+use Gdbots\Schemas\Iam\Request\SearchRolesRequestV1;
+use Gdbots\Schemas\Iam\Request\SearchRolesResponseV1;
 
-class ListAllRolesRequestHandler extends AbstractRequestHandler
+/**
+ * @deprecated will be removed in 3.x
+ */
+class ListAllRolesRequestHandler implements RequestHandler
 {
-    /** @var Ncr */
-    protected $ncr;
-
-    /**
-     * @param Ncr $ncr
-     */
-    public function __construct(Ncr $ncr)
-    {
-        $this->ncr = $ncr;
-    }
-
-    /**
-     * @param ListAllRolesRequest $request
-     * @param Pbjx                $pbjx
-     *
-     * @return ListAllRolesResponse
-     */
-    protected function handle(ListAllRolesRequest $request, Pbjx $pbjx): ListAllRolesResponse
-    {
-        $roles = [];
-        $this->ncr->pipeNodeRefs(RoleV1Mixin::findOne()->getQName(), function (NodeRef $nodeRef) use (&$roles) {
-            $roles[] = $nodeRef;
-        }, $this->createNcrContext($request));
-
-        return $this->createListAllRolesResponse($request, $pbjx)->addToSet('roles', $roles);
-    }
-
-    /**
-     * @param ListAllRolesRequest $request
-     * @param Pbjx                $pbjx
-     *
-     * @return ListAllRolesResponse
-     */
-    protected function createListAllRolesResponse(ListAllRolesRequest $request, Pbjx $pbjx): ListAllRolesResponse
-    {
-        /** @var ListAllRolesResponse $response */
-        $response = $this->createResponseFromRequest($request, $pbjx);
-        return $response;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public static function handlesCuries(): array
     {
-        return [
-            ListAllRolesRequestV1Mixin::findOne()->getCurie(),
-        ];
+        try {
+            return [
+                MessageResolver::findOneUsingMixin(ListAllRolesRequestV1Mixin::SCHEMA_CURIE_MAJOR, false),
+            ];
+        } catch (\Throwable $e) {
+            return [];
+        }
+    }
+
+    public function handleRequest(Message $request, Pbjx $pbjx): Message
+    {
+        $response = $this->createListAllRolesResponse($request, $pbjx);
+        $searchRequest = SearchRolesRequestV1::create();
+
+        try {
+            $searchResponse = $pbjx->copyContext($request, $searchRequest)->request($searchRequest);
+        } catch (\Throwable $e) {
+            return $response;
+        }
+
+        $roles = $searchResponse->get(SearchRolesResponseV1::NODES_FIELD, []);
+        $refs = array_map(fn(Message $role) => $role->generateNodeRef(), $roles);
+
+        $response->addToSet(ListAllRolesResponseV1Mixin::ROLES_FIELD, $refs);
+    }
+
+    protected function createListAllRolesResponse(Message $request, Pbjx $pbjx): Message
+    {
+        $curie = MessageResolver::findOneUsingMixin(ListAllRolesResponseV1Mixin::SCHEMA_CURIE_MAJOR);
+        return MessageResolver::resolveCurie($curie)::create();
     }
 }
