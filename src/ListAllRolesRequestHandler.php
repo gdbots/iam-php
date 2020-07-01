@@ -19,9 +19,13 @@ class ListAllRolesRequestHandler implements RequestHandler
 {
     public static function handlesCuries(): array
     {
-        return [
-            MessageResolver::findOneUsingMixin(ListAllRolesRequestV1Mixin::SCHEMA_CURIE_MAJOR, false),
-        ];
+        try {
+            return [
+                MessageResolver::findOneUsingMixin(ListAllRolesRequestV1Mixin::SCHEMA_CURIE_MAJOR, false),
+            ];
+        } catch (\Throwable $e) {
+            return [];
+        }
     }
 
     public function handleRequest(Message $request, Pbjx $pbjx): Message
@@ -35,7 +39,6 @@ class ListAllRolesRequestHandler implements RequestHandler
             return $response;
         }
 
-        /** @var Message $role */
         $roles = $searchResponse->get(SearchRolesResponseV1::NODES_FIELD, []);
         $refs = array_map(fn(Message $role) => $role->generateNodeRef(), $roles);
 
