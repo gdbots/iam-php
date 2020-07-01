@@ -7,6 +7,7 @@ use Gdbots\Ncr\AbstractSearchNodesRequestHandler;
 use Gdbots\Pbj\Message;
 use Gdbots\Pbj\MessageResolver;
 use Gdbots\Pbj\SchemaCurie;
+use Gdbots\Pbj\SchemaQName;
 use Gdbots\Pbjx\Pbjx;
 use Gdbots\QueryParser\ParsedQuery;
 use Gdbots\Schemas\Iam\Mixin\App\AppV1Mixin;
@@ -30,6 +31,9 @@ class SearchAppsRequestHandler extends AbstractSearchNodesRequestHandler
         if (null === $qnames) {
             $curies = MessageResolver::findAllUsingMixin(AppV1Mixin::SCHEMA_CURIE_MAJOR, false);
             $qnames = array_map(fn(string $curie) => SchemaCurie::fromString($curie)->getQName(), $curies);
+            if (empty($qnames)) {
+                $qnames = [SchemaQName::fromString(MessageResolver::getDefaultVendor() . ':no-app')];
+            }
         }
 
         return $qnames;
