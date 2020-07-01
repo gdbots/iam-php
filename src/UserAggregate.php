@@ -9,7 +9,6 @@ use Gdbots\Pbj\MessageResolver;
 use Gdbots\Pbj\SchemaCurie;
 use Gdbots\Pbj\WellKnown\NodeRef;
 use Gdbots\Pbjx\Pbjx;
-use Gdbots\Schemas\Common\Mixin\Taggable\TaggableV1Mixin;
 use Gdbots\Schemas\Iam\Event\UserRolesGrantedV1;
 use Gdbots\Schemas\Iam\Event\UserRolesRevokedV1;
 use Gdbots\Schemas\Iam\Mixin\Role\RoleV1Mixin;
@@ -53,15 +52,9 @@ class UserAggregate extends Aggregate
         }
 
         $event = $this->createUserRolesGranted($command);
-        $this->pbjx->copyContext($command, $event);
+        $this->copyContext($command, $event);
         $event->set($event::NODE_REF_FIELD, $this->nodeRef);
         $event->addToSet($event::ROLES_FIELD, $roles);
-
-        if ($event::schema()->hasMixin(TaggableV1Mixin::SCHEMA_CURIE)) {
-            foreach ($command->get($event::TAGS_FIELD, []) as $k => $v) {
-                $event->addToMap($event::TAGS_FIELD, $k, $v);
-            }
-        }
 
         $this->recordEvent($event);
     }
@@ -89,15 +82,9 @@ class UserAggregate extends Aggregate
         }
 
         $event = $this->createUserRolesRevoked($command);
-        $this->pbjx->copyContext($command, $event);
+        $this->copyContext($command, $event);
         $event->set($event::NODE_REF_FIELD, $this->nodeRef);
         $event->addToSet($event::ROLES_FIELD, $roles);
-
-        if ($event::schema()->hasMixin(TaggableV1Mixin::SCHEMA_CURIE)) {
-            foreach ($command->get($event::TAGS_FIELD, []) as $k => $v) {
-                $event->addToMap($event::TAGS_FIELD, $k, $v);
-            }
-        }
 
         $this->recordEvent($event);
     }
@@ -218,11 +205,11 @@ class UserAggregate extends Aggregate
      * ncr operations. It will be removed in 3.x.
      *
      * @param string $name
-     * @param array $arguments
+     * @param array  $arguments
      *
      * @return mixed
      */
-    public function __call(string $name , array $arguments)
+    public function __call(string $name, array $arguments)
     {
         $newName = str_replace('User', 'Node', $name);
         if ($newName !== $name && is_callable([$this, $newName])) {
