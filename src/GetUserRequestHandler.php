@@ -3,60 +3,63 @@ declare(strict_types=1);
 
 namespace Gdbots\Iam;
 
-use Gdbots\Ncr\AbstractGetNodeRequestHandler;
+use Gdbots\Ncr\AggregateResolver;
 use Gdbots\Ncr\Exception\NodeNotFound;
+use Gdbots\Ncr\GetNodeRequestHandler;
 use Gdbots\Ncr\IndexQueryBuilder;
+use Gdbots\Pbj\Message;
+use Gdbots\Pbj\MessageResolver;
 use Gdbots\Pbj\SchemaQName;
 use Gdbots\Pbjx\Pbjx;
 use Gdbots\Schemas\Iam\Mixin\GetUserRequest\GetUserRequestV1Mixin;
-use Gdbots\Schemas\Iam\Mixin\User\User;
+use Gdbots\Schemas\Iam\Request\GetUserRequestV1;
+use Gdbots\Schemas\Iam\Request\GetUserResponseV1;
 use Gdbots\Schemas\Ncr\Enum\NodeStatus;
-use Gdbots\Schemas\Ncr\Mixin\GetNodeRequest\GetNodeRequest;
-use Gdbots\Schemas\Ncr\Mixin\GetNodeResponse\GetNodeResponse;
-use Gdbots\Schemas\Ncr\Mixin\Node\Node;
+use Gdbots\Schemas\Ncr\Mixin\Node\NodeV1Mixin;
 
-class GetUserRequestHandler extends AbstractGetNodeRequestHandler
+class GetUserRequestHandler extends GetNodeRequestHandler
 {
-    /**
-     * {@inheritdoc}
-     */
-    protected function handle(GetNodeRequest $request, Pbjx $pbjx): GetNodeResponse
+    public static function handlesCuries(): array
     {
-        if (!$request->has('email')) {
-            return parent::handle($request, $pbjx);
+        // deprecated mixins, will be removed in 3.x
+        $curies = MessageResolver::findAllUsingMixin(GetUserRequestV1Mixin::SCHEMA_CURIE_MAJOR, false);
+        $curies[] = GetUserRequestV1::SCHEMA_CURIE;
+        return $curies;
+    }
+
+    public function handleRequest(Message $request, Pbjx $pbjx): Message
+    {
+        if (!$request->has(GetUserRequestV1::EMAIL_FIELD)) {
+            return parent::handleRequest($request, $pbjx);
         }
 
-        $context = $this->createNcrContext($request);
-        $qname = SchemaQName::fromString($request->get('qname'));
-        $query = IndexQueryBuilder::create($qname, 'email', $request->get('email'))
+        $response = $this->createGetNodeResponse($request, $pbjx);
+        $consistent = $request->get(GetUserRequestV1::CONSISTENT_READ_FIELD);
+        $context = ['causator' => $request];
+
+        $qname = SchemaQName::fromString($request->get(GetUserRequestV1::QNAME_FIELD));
+        $query = IndexQueryBuilder::create($qname, 'email', $request->get(GetUserRequestV1::EMAIL_FIELD))
             ->setCount(1)
-            ->filterEq('status', NodeStatus::PUBLISHED)
+            ->filterEq(NodeV1Mixin::STATUS_FIELD, NodeStatus::PUBLISHED)
             ->build();
         $result = $this->ncr->findNodeRefs($query, $context);
         if (!$result->count()) {
             throw new NodeNotFound('Unable to find user.');
         }
 
-        $node = $this->ncr->getNode($result->getNodeRefs()[0], $request->get('consistent_read'), $context);
-        $this->assertIsNodeSupported($node);
-        return $this->createGetNodeResponse($request, $pbjx)->set('node', $node);
+        $node = $this->ncr->getNode($result->getNodeRefs()[0], $consistent, $context);
+
+        if ($consistent) {
+            $aggregate = AggregateResolver::resolve($node::schema()->getQName())::fromNode($node, $pbjx);
+            $aggregate->sync($context);
+            $node = $aggregate->getNode();
+        }
+
+        return $response->set(GetUserResponseV1::NODE_FIELD, $node);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function isNodeSupported(Node $node): bool
+    protected function createGetNodeResponse(Message $request, Pbjx $pbjx): Message
     {
-        return $node instanceof User;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function handlesCuries(): array
-    {
-        return [
-            GetUserRequestV1Mixin::findOne()->getCurie(),
-        ];
+        return GetUserResponseV1::create();
     }
 }

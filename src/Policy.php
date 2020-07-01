@@ -100,20 +100,20 @@ final class Policy implements \JsonSerializable
      * Converts an action with potentially colon delimiters
      * into a set of permissions to check for.
      *
+     * @param string $action
+     *
+     * @return string[]
      * @example
-     * An action of "acme:blog:command:publish-article" becomes
-     * an array of:
-     * [
+     *   An action of "acme:blog:command:publish-article" becomes
+     *   an array of:
+     *   [
      *   '*',
      *   'acme:*',
      *   'acme:blog:*',
      *   'acme:blog:command:*',
      *   'acme:blog:command:publish-article',
-     * ]
+     *   ]
      *
-     * @param string $action
-     *
-     * @return string[]
      */
     private function getRules(string $action): array
     {

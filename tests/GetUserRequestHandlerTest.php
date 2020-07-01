@@ -4,11 +4,12 @@ declare(strict_types=1);
 namespace Gdbots\Tests\Iam;
 
 use Acme\Schemas\Iam\Node\UserV1;
-use Acme\Schemas\Iam\Request\GetUserRequestV1;
-use Acme\Schemas\Iam\Request\GetUserResponseV1;
 use Gdbots\Iam\GetUserRequestHandler;
+use Gdbots\Ncr\Exception\NodeNotFound;
 use Gdbots\Pbj\SchemaQName;
-use Gdbots\Schemas\Ncr\NodeRef;
+use Gdbots\Pbj\WellKnown\NodeRef;
+use Gdbots\Schemas\Iam\Request\GetUserRequestV1;
+use Gdbots\Schemas\Iam\Request\GetUserResponseV1;
 
 final class GetUserRequestHandlerTest extends AbstractPbjxTest
 {
@@ -29,22 +30,18 @@ final class GetUserRequestHandlerTest extends AbstractPbjxTest
         $this->assertSame($nodeRef->getId(), (string)$response->get('node')->get('_id'));
     }
 
-    /**
-     * @expectedException \Gdbots\Ncr\Exception\NodeNotFound
-     */
     public function testGetByNodeRefThatDoesNotExists()
     {
+        $this->expectException(NodeNotFound::class);
         $nodeRef = NodeRef::fromString('gdbots:iam:idontexist');
         $request = GetUserRequestV1::create()->set('node_ref', $nodeRef);
         $handler = new GetUserRequestHandler($this->ncr);
         $handler->handleRequest($request, $this->pbjx);
     }
 
-    /**
-     * @expectedException \Gdbots\Ncr\Exception\NodeNotFound
-     */
     public function testGetByNothing()
     {
+        $this->expectException(NodeNotFound::class);
         $request = GetUserRequestV1::create();
         $handler = new GetUserRequestHandler($this->ncr);
         $handler->handleRequest($request, $this->pbjx);
@@ -71,11 +68,9 @@ final class GetUserRequestHandlerTest extends AbstractPbjxTest
         $this->assertSame($nodeRef->getId(), (string)$response->get('node')->get('_id'));
     }
 
-    /**
-     * @expectedException \Gdbots\Ncr\Exception\NodeNotFound
-     */
     public function testGetByEmailThatDoesNotExists()
     {
+        $this->expectException(NodeNotFound::class);
         $request = GetUserRequestV1::create()
             ->set('qname', SchemaQName::fromString('acme:user')->toString())
             ->set('email', 'homer@simpson.com');

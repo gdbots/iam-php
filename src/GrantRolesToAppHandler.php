@@ -20,7 +20,7 @@ class GrantRolesToAppHandler implements CommandHandler
     public static function handlesCuries(): array
     {
         // deprecated mixins, will be removed in 3.x
-        $curies = MessageResolver::findAllUsingMixin(GrantRolesToAppV1Mixin::SCHEMA_CURIE, false);
+        $curies = MessageResolver::findAllUsingMixin(GrantRolesToAppV1Mixin::SCHEMA_CURIE_MAJOR, false);
         $curies[] = GrantRolesToAppV1::SCHEMA_CURIE;
         return $curies;
     }

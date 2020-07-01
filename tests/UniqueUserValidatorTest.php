@@ -1,17 +1,17 @@
 <?php
 declare(strict_types=1);
 
-namespace Gdbots\Tests\Iam\Validator;
+namespace Gdbots\Tests\Iam;
 
-use Acme\Schemas\Iam\Command\CreateUserV1;
-use Acme\Schemas\Iam\Event\UserCreatedV1;
 use Acme\Schemas\Iam\Node\UserV1;
-use Acme\Schemas\Iam\Request\GetUserRequestV1;
 use Gdbots\Iam\GetUserRequestHandler;
-use Gdbots\Ncr\Validator\UniqueNodeValidator;
+use Gdbots\Ncr\Exception\NodeAlreadyExists;
+use Gdbots\Ncr\UniqueNodeValidator;
 use Gdbots\Pbjx\Event\PbjxEvent;
+use Gdbots\Schemas\Iam\Request\GetUserRequestV1;
+use Gdbots\Schemas\Ncr\Command\CreateNodeV1;
+use Gdbots\Schemas\Ncr\Event\NodeCreatedV1;
 use Gdbots\Schemas\Pbjx\StreamId;
-use Gdbots\Tests\Iam\AbstractPbjxTest;
 
 final class UniqueUserValidatorTest extends AbstractPbjxTest
 {
@@ -29,7 +29,7 @@ final class UniqueUserValidatorTest extends AbstractPbjxTest
 
     public function testValidateCreateUserThatDoesNotExist(): void
     {
-        $command = CreateUserV1::create();
+        $command = CreateNodeV1::create();
         $node = UserV1::fromArray([
             '_id'   => '7afcc2f1-9654-46d1-8fc1-b0511df257db',
             'email' => 'homer@simpson.com',
@@ -44,20 +44,18 @@ final class UniqueUserValidatorTest extends AbstractPbjxTest
         $this->assertTrue(true);
     }
 
-    /**
-     * @expectedException \Gdbots\Ncr\Exception\NodeAlreadyExists
-     */
     public function testValidateCreateUserThatDoesExistById(): void
     {
-        $command = CreateUserV1::create();
-        $event = UserCreatedV1::create();
+        $this->expectException(NodeAlreadyExists::class);
+        $command = CreateNodeV1::create();
+        $event = NodeCreatedV1::create();
         $node = UserV1::fromArray([
             '_id'   => '7afcc2f1-9654-46d1-8fc1-b0511df257db',
             'email' => 'homer@simpson.com',
         ]);
         $command->set('node', $node);
         $event->set('node', $node);
-        $this->eventStore->putEvents(StreamId::fromString("user.history:{$node->get('_id')}"), [$event]);
+        $this->eventStore->putEvents(StreamId::fromString("acme:user:{$node->get('_id')}"), [$event]);
 
         $validator = new UniqueNodeValidator();
         $pbjxEvent = new PbjxEvent($command);
