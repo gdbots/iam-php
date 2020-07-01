@@ -20,6 +20,15 @@ services:
 
   Gdbots\Iam\:
     resource: '%kernel.project_dir%/vendor/gdbots/iam/src/**/*'
+    exclude: '*Aggregate*'
+
+  Gdbots\Iam\NcrAppProjector:
+    arguments:
+      $enabled: '%env(bool:NCR_PROJECTOR_ENABLED)%'
+
+  Gdbots\Iam\NcrUserProjector:
+    arguments:
+      $enabled: '%env(bool:NCR_PROJECTOR_ENABLED)%'
 
 ```
 
