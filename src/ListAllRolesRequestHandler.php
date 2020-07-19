@@ -7,10 +7,7 @@ use Gdbots\Pbj\Message;
 use Gdbots\Pbj\MessageResolver;
 use Gdbots\Pbjx\Pbjx;
 use Gdbots\Pbjx\RequestHandler;
-use Gdbots\Schemas\Iam\Mixin\ListAllRolesRequest\ListAllRolesRequestV1Mixin;
-use Gdbots\Schemas\Iam\Mixin\ListAllRolesResponse\ListAllRolesResponseV1Mixin;
 use Gdbots\Schemas\Iam\Request\SearchRolesRequestV1;
-use Gdbots\Schemas\Iam\Request\SearchRolesResponseV1;
 
 /**
  * @deprecated will be removed in 3.x
@@ -19,13 +16,7 @@ class ListAllRolesRequestHandler implements RequestHandler
 {
     public static function handlesCuries(): array
     {
-        try {
-            return [
-                MessageResolver::findOneUsingMixin(ListAllRolesRequestV1Mixin::SCHEMA_CURIE_MAJOR, false),
-            ];
-        } catch (\Throwable $e) {
-            return [];
-        }
+        return MessageResolver::findAllUsingMixin('gdbots:iam:mixin:list-all-roles-request:v1', false);
     }
 
     public function handleRequest(Message $request, Pbjx $pbjx): Message
@@ -39,15 +30,15 @@ class ListAllRolesRequestHandler implements RequestHandler
             return $response;
         }
 
-        $roles = $searchResponse->get(SearchRolesResponseV1::NODES_FIELD, []);
+        $roles = $searchResponse->get('nodes', []);
         $refs = array_map(fn(Message $role) => $role->generateNodeRef(), $roles);
 
-        $response->addToSet(ListAllRolesResponseV1Mixin::ROLES_FIELD, $refs);
+        $response->addToSet('roles', $refs);
     }
 
     protected function createListAllRolesResponse(Message $request, Pbjx $pbjx): Message
     {
-        $curie = MessageResolver::findOneUsingMixin(ListAllRolesResponseV1Mixin::SCHEMA_CURIE_MAJOR);
+        $curie = MessageResolver::findOneUsingMixin('gdbots:iam:mixin:list-all-roles-response:v1');
         return MessageResolver::resolveCurie($curie)::create();
     }
 }

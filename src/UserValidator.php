@@ -11,11 +11,7 @@ use Gdbots\Pbjx\DependencyInjection\PbjxValidator;
 use Gdbots\Pbjx\Event\PbjxEvent;
 use Gdbots\Pbjx\EventSubscriber;
 use Gdbots\Pbjx\Exception\RequestHandlingFailed;
-use Gdbots\Schemas\Iam\Mixin\User\UserV1Mixin;
 use Gdbots\Schemas\Iam\Request\GetUserRequestV1;
-use Gdbots\Schemas\Ncr\Command\CreateNodeV1;
-use Gdbots\Schemas\Ncr\Command\UpdateNodeV1;
-use Gdbots\Schemas\Ncr\Mixin\Node\NodeV1Mixin;
 use Gdbots\Schemas\Pbjx\Enum\Code;
 
 class UserValidator implements EventSubscriber, PbjxValidator
@@ -23,7 +19,7 @@ class UserValidator implements EventSubscriber, PbjxValidator
     public static function getSubscribedEvents()
     {
         return [
-            UserV1Mixin::SCHEMA_CURIE . '.validate' => 'validate',
+            'gdbots:iam:mixin:user.validate' => 'validate',
         ];
     }
 
@@ -45,13 +41,13 @@ class UserValidator implements EventSubscriber, PbjxValidator
     {
         $command = $pbjxEvent->getMessage();
 
-        Assertion::true($command->has(CreateNodeV1::NODE_FIELD), 'Field "node" is required.', 'node');
+        Assertion::true($command->has('node'), 'Field "node" is required.', 'node');
         /** @var Message $node */
-        $node = $command->get(CreateNodeV1::NODE_FIELD);
-        Assertion::true($node->has(UserV1Mixin::EMAIL_FIELD), 'Field "node.email" is required.', 'node.email');
+        $node = $command->get('node');
+        Assertion::true($node->has('email'), 'Field "node.email" is required.', 'node.email');
 
         $this->normalizeEmail($node);
-        $this->ensureEmailIsAvailable($pbjxEvent, NodeRef::fromNode($node), $node->get(UserV1Mixin::EMAIL_FIELD));
+        $this->ensureEmailIsAvailable($pbjxEvent, NodeRef::fromNode($node), $node->get('email'));
     }
 
     protected function validateUpdateUser(PbjxEvent $pbjxEvent): void
@@ -63,36 +59,32 @@ class UserValidator implements EventSubscriber, PbjxValidator
     {
         $command = $pbjxEvent->getMessage();
 
-        Assertion::true($command->has(UpdateNodeV1::NEW_NODE_FIELD), 'Field "new_node" is required.', 'new_node');
-        $newNode = $command->get(UpdateNodeV1::NEW_NODE_FIELD);
-        Assertion::true($newNode->has(UserV1Mixin::EMAIL_FIELD), 'Field "new_node.email" is required.', 'new_node.email');
+        Assertion::true($command->has('new_node'), 'Field "new_node" is required.', 'new_node');
+        $newNode = $command->get('new_node');
+        Assertion::true($newNode->has('email'), 'Field "new_node.email" is required.', 'new_node.email');
 
         /*
          * An update SHOULD NOT change the email, so copy the email from
          * the old node if it's present. To change the email, use the
          * proper "change-email" command.
          */
-        if ($command->has(UpdateNodeV1::OLD_NODE_FIELD)) {
-            $oldNode = $command->get(UpdateNodeV1::OLD_NODE_FIELD);
-            $newNode->set(UserV1Mixin::EMAIL_FIELD, $oldNode->get(UserV1Mixin::EMAIL_FIELD));
+        if ($command->has('old_node')) {
+            $oldNode = $command->get('old_node');
+            $newNode->set('email', $oldNode->get('email'));
             $this->normalizeEmail($newNode);
             return;
         }
 
         $this->normalizeEmail($newNode);
-        $this->ensureEmailIsAvailable(
-            $pbjxEvent,
-            $command->get(UpdateNodeV1::NODE_REF_FIELD),
-            $newNode->get(UserV1Mixin::EMAIL_FIELD)
-        );
+        $this->ensureEmailIsAvailable($pbjxEvent, $command->get('node_ref'), $newNode->get('email'));
     }
 
     protected function normalizeEmail(Message $node): void
     {
-        $email = strtolower($node->get(UserV1Mixin::EMAIL_FIELD));
+        $email = strtolower($node->get('email'));
         $emailParts = explode('@', $email);
-        $node->set(UserV1Mixin::EMAIL_FIELD, $email);
-        $node->set(UserV1Mixin::EMAIL_DOMAIN_FIELD, array_pop($emailParts));
+        $node->set('email', $email);
+        $node->set('email_domain', array_pop($emailParts));
     }
 
     protected function ensureEmailIsAvailable(PbjxEvent $pbjxEvent, NodeRef $nodeRef, string $email): void
@@ -102,9 +94,9 @@ class UserValidator implements EventSubscriber, PbjxValidator
 
         try {
             $request = GetUserRequestV1::create()
-                ->set(GetUserRequestV1::CONSISTENT_READ_FIELD, true)
-                ->set(GetUserRequestV1::QNAME_FIELD, $nodeRef->getQName()->toString())
-                ->set(GetUserRequestV1::EMAIL_FIELD, $email);
+                ->set('consistent_read', true)
+                ->set('qname', $nodeRef->getQName()->toString())
+                ->set('email', $email);
 
             $response = $pbjx->copyContext($command, $request)->request($request);
         } catch (RequestHandlingFailed $e) {
@@ -119,9 +111,9 @@ class UserValidator implements EventSubscriber, PbjxValidator
         }
 
         /** @var Message $node */
-        $node = $response->get($response::NODE_FIELD);
+        $node = $response->get('node');
 
-        if ($nodeRef->getId() === $node->fget(NodeV1Mixin::_ID_FIELD)) {
+        if ($nodeRef->getId() === $node->fget('_id')) {
             // this is the same node.
             return;
         }

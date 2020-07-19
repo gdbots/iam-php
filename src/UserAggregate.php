@@ -11,12 +11,7 @@ use Gdbots\Pbj\WellKnown\NodeRef;
 use Gdbots\Pbjx\Pbjx;
 use Gdbots\Schemas\Iam\Event\UserRolesGrantedV1;
 use Gdbots\Schemas\Iam\Event\UserRolesRevokedV1;
-use Gdbots\Schemas\Iam\Mixin\Role\RoleV1Mixin;
-use Gdbots\Schemas\Iam\Mixin\User\UserV1Mixin;
 use Gdbots\Schemas\Ncr\Enum\NodeStatus;
-use Gdbots\Schemas\Ncr\Event\NodeCreatedV1;
-use Gdbots\Schemas\Ncr\Event\NodeUpdatedV1;
-use Gdbots\Schemas\Ncr\Mixin\Node\NodeV1Mixin;
 
 class UserAggregate extends Aggregate
 {
@@ -24,24 +19,24 @@ class UserAggregate extends Aggregate
     {
         parent::__construct($node, $pbjx, $syncAllEvents);
         // users are only published or deleted, enforce it.
-        if (NodeStatus::DELETED !== $this->node->fget(NodeV1Mixin::STATUS_FIELD)) {
-            $this->node->set(NodeV1Mixin::STATUS_FIELD, NodeStatus::PUBLISHED());
+        if (NodeStatus::DELETED !== $this->node->fget('status')) {
+            $this->node->set('status', NodeStatus::PUBLISHED());
         }
     }
 
     public function grantRolesToUser(Message $command): void
     {
         /** @var NodeRef $nodeRef */
-        $nodeRef = $command->get($command::NODE_REF_FIELD);
+        $nodeRef = $command->get('node_ref');
         $this->assertNodeRefMatches($nodeRef);
 
         $roleQname = SchemaCurie::fromString(
-            MessageResolver::findOneUsingMixin(RoleV1Mixin::SCHEMA_CURIE_MAJOR, false)
+            MessageResolver::findOneUsingMixin('gdbots:iam:mixin:role:v1', false)
         )->getQName();
 
         /** @var NodeRef $ref */
-        foreach ($command->get($command::ROLES_FIELD, []) as $ref) {
-            if ($ref->getQName() === $roleQname && !$this->node->isInSet(UserV1Mixin::ROLES_FIELD, $ref)) {
+        foreach ($command->get('roles', []) as $ref) {
+            if ($ref->getQName() === $roleQname && !$this->node->isInSet('roles', $ref)) {
                 $roles[] = $ref;
             }
         }
@@ -53,8 +48,8 @@ class UserAggregate extends Aggregate
 
         $event = $this->createUserRolesGranted($command);
         $this->copyContext($command, $event);
-        $event->set($event::NODE_REF_FIELD, $this->nodeRef);
-        $event->addToSet($event::ROLES_FIELD, $roles);
+        $event->set('node_ref', $this->nodeRef);
+        $event->addToSet('roles', $roles);
 
         $this->recordEvent($event);
     }
@@ -62,16 +57,16 @@ class UserAggregate extends Aggregate
     public function revokeRolesFromUser(Message $command): void
     {
         /** @var NodeRef $nodeRef */
-        $nodeRef = $command->get($command::NODE_REF_FIELD);
+        $nodeRef = $command->get('node_ref');
         $this->assertNodeRefMatches($nodeRef);
 
         $roleQname = SchemaCurie::fromString(
-            MessageResolver::findOneUsingMixin(RoleV1Mixin::SCHEMA_CURIE_MAJOR, false)
+            MessageResolver::findOneUsingMixin('gdbots:iam:mixin:role:v1', false)
         )->getQName();
 
         /** @var NodeRef $ref */
-        foreach ($command->get($command::ROLES_FIELD, []) as $ref) {
-            if ($ref->getQName() === $roleQname && $this->node->isInSet(UserV1Mixin::ROLES_FIELD, $ref)) {
+        foreach ($command->get('roles', []) as $ref) {
+            if ($ref->getQName() === $roleQname && $this->node->isInSet('roles', $ref)) {
                 $roles[] = $ref;
             }
         }
@@ -83,35 +78,29 @@ class UserAggregate extends Aggregate
 
         $event = $this->createUserRolesRevoked($command);
         $this->copyContext($command, $event);
-        $event->set($event::NODE_REF_FIELD, $this->nodeRef);
-        $event->addToSet($event::ROLES_FIELD, $roles);
+        $event->set('node_ref', $this->nodeRef);
+        $event->addToSet('roles', $roles);
 
         $this->recordEvent($event);
     }
 
     protected function applyUserRolesGranted(Message $event): void
     {
-        $this->node->addToSet(
-            UserV1Mixin::ROLES_FIELD,
-            $event->get(UserRolesGrantedV1::ROLES_FIELD, [])
-        );
+        $this->node->addToSet('roles', $event->get('roles', []));
     }
 
     protected function applyUserRolesRevoked(Message $event): void
     {
-        $this->node->removeFromSet(
-            UserV1Mixin::ROLES_FIELD,
-            $event->get(UserRolesRevokedV1::ROLES_FIELD, [])
-        );
+        $this->node->removeFromSet('roles', $event->get('roles', []));
     }
 
     protected function enrichNodeCreated(Message $event): void
     {
         /** @var Message $node */
-        $node = $event->get(NodeCreatedV1::NODE_FIELD);
+        $node = $event->get('node');
 
         // roles SHOULD be set with grant-roles-to-user
-        $node->clear(UserV1Mixin::ROLES_FIELD);
+        $node->clear('roles');
         $this->setDefaultTitle($node);
         $this->setEmailDomain($node);
 
@@ -121,22 +110,22 @@ class UserAggregate extends Aggregate
     protected function enrichNodeUpdated(Message $event): void
     {
         /** @var Message $oldNode */
-        $oldNode = $event->get(NodeUpdatedV1::OLD_NODE_FIELD);
+        $oldNode = $event->get('old_node');
 
         /** @var Message $newNode */
-        $newNode = $event->get(NodeUpdatedV1::NEW_NODE_FIELD);
+        $newNode = $event->get('new_node');
 
         $newNode
             // email SHOULD NOT change during an update, use "change-email"
-            ->set(UserV1Mixin::EMAIL_FIELD, $oldNode->get(UserV1Mixin::EMAIL_FIELD))
-            ->set(UserV1Mixin::EMAIL_DOMAIN_FIELD, $oldNode->get(UserV1Mixin::EMAIL_DOMAIN_FIELD))
+            ->set('email', $oldNode->get('email'))
+            ->set('email_domain', $oldNode->get('email_domain'))
             // roles SHOULD NOT change during an update
-            ->clear(UserV1Mixin::ROLES_FIELD)
-            ->addToSet(UserV1Mixin::ROLES_FIELD, $oldNode->get(UserV1Mixin::ROLES_FIELD, []));
+            ->clear('roles')
+            ->addToSet('roles', $oldNode->get('roles', []));
 
         // users are only published or deleted, enforce it.
-        if (NodeStatus::DELETED !== $newNode->fget(NodeV1Mixin::STATUS_FIELD)) {
-            $newNode->set(NodeV1Mixin::STATUS_FIELD, NodeStatus::PUBLISHED());
+        if (NodeStatus::DELETED !== $newNode->fget('status')) {
+            $newNode->set('status', NodeStatus::PUBLISHED());
         }
 
         $this->setDefaultTitle($newNode);
@@ -147,27 +136,27 @@ class UserAggregate extends Aggregate
 
     protected function setDefaultTitle(Message $node): void
     {
-        if ($node->has(NodeV1Mixin::TITLE_FIELD)) {
+        if ($node->has('title')) {
             return;
         }
 
-        $firstName = $node->get(UserV1Mixin::FIRST_NAME_FIELD);
-        $lastName = $node->get(UserV1Mixin::LAST_NAME_FIELD);
+        $firstName = $node->get('first_name');
+        $lastName = $node->get('last_name');
         $title = trim("{$firstName} {$lastName}");
-        $node->set(NodeV1Mixin::TITLE_FIELD, $title);
+        $node->set('title', $title);
     }
 
     protected function setEmailDomain(Message $node): void
     {
-        if (!$node->has(UserV1Mixin::EMAIL_FIELD)) {
-            $node->clear(UserV1Mixin::EMAIL_DOMAIN_FIELD);
+        if (!$node->has('email')) {
+            $node->clear('email_domain');
             return;
         }
 
-        $email = strtolower($node->get(UserV1Mixin::EMAIL_FIELD));
+        $email = strtolower($node->get('email'));
         $emailParts = explode('@', $email);
-        $node->set(UserV1Mixin::EMAIL_FIELD, $email);
-        $node->set(UserV1Mixin::EMAIL_DOMAIN_FIELD, array_pop($emailParts));
+        $node->set('email', $email);
+        $node->set('email_domain', array_pop($emailParts));
     }
 
     /**

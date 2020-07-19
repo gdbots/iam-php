@@ -11,11 +11,7 @@ use Gdbots\Pbj\WellKnown\NodeRef;
 use Gdbots\Pbjx\Pbjx;
 use Gdbots\Schemas\Iam\Event\AppRolesGrantedV1;
 use Gdbots\Schemas\Iam\Event\AppRolesRevokedV1;
-use Gdbots\Schemas\Iam\Mixin\App\AppV1Mixin;
-use Gdbots\Schemas\Iam\Mixin\Role\RoleV1Mixin;
 use Gdbots\Schemas\Ncr\Enum\NodeStatus;
-use Gdbots\Schemas\Ncr\Event\NodeUpdatedV1;
-use Gdbots\Schemas\Ncr\Mixin\Node\NodeV1Mixin;
 
 class AppAggregate extends Aggregate
 {
@@ -23,24 +19,24 @@ class AppAggregate extends Aggregate
     {
         parent::__construct($node, $pbjx, $syncAllEvents);
         // apps are only published or deleted, enforce it.
-        if (NodeStatus::DELETED !== $this->node->fget(NodeV1Mixin::STATUS_FIELD)) {
-            $this->node->set(NodeV1Mixin::STATUS_FIELD, NodeStatus::PUBLISHED());
+        if (NodeStatus::DELETED !== $this->node->fget('status')) {
+            $this->node->set('status', NodeStatus::PUBLISHED());
         }
     }
 
     public function grantRolesToApp(Message $command): void
     {
         /** @var NodeRef $nodeRef */
-        $nodeRef = $command->get($command::NODE_REF_FIELD);
+        $nodeRef = $command->get('node_ref');
         $this->assertNodeRefMatches($nodeRef);
 
         $roleQname = SchemaCurie::fromString(
-            MessageResolver::findOneUsingMixin(RoleV1Mixin::SCHEMA_CURIE_MAJOR, false)
+            MessageResolver::findOneUsingMixin('gdbots:iam:mixin:role:v1', false)
         )->getQName();
 
         /** @var NodeRef $ref */
-        foreach ($command->get($command::ROLES_FIELD, []) as $ref) {
-            if ($ref->getQName() === $roleQname && !$this->node->isInSet(AppV1Mixin::ROLES_FIELD, $ref)) {
+        foreach ($command->get('roles', []) as $ref) {
+            if ($ref->getQName() === $roleQname && !$this->node->isInSet('roles', $ref)) {
                 $roles[] = $ref;
             }
         }
@@ -52,8 +48,8 @@ class AppAggregate extends Aggregate
 
         $event = $this->createAppRolesGranted($command);
         $this->copyContext($command, $event);
-        $event->set($event::NODE_REF_FIELD, $this->nodeRef);
-        $event->addToSet($event::ROLES_FIELD, $roles);
+        $event->set('node_ref', $this->nodeRef);
+        $event->addToSet('roles', $roles);
 
         $this->recordEvent($event);
     }
@@ -61,16 +57,16 @@ class AppAggregate extends Aggregate
     public function revokeRolesFromApp(Message $command): void
     {
         /** @var NodeRef $nodeRef */
-        $nodeRef = $command->get($command::NODE_REF_FIELD);
+        $nodeRef = $command->get('node_ref');
         $this->assertNodeRefMatches($nodeRef);
 
         $roleQname = SchemaCurie::fromString(
-            MessageResolver::findOneUsingMixin(RoleV1Mixin::SCHEMA_CURIE_MAJOR, false)
+            MessageResolver::findOneUsingMixin('gdbots:iam:mixin:role:v1', false)
         )->getQName();
 
         /** @var NodeRef $ref */
-        foreach ($command->get($command::ROLES_FIELD, []) as $ref) {
-            if ($ref->getQName() === $roleQname && $this->node->isInSet(AppV1Mixin::ROLES_FIELD, $ref)) {
+        foreach ($command->get('roles', []) as $ref) {
+            if ($ref->getQName() === $roleQname && $this->node->isInSet('roles', $ref)) {
                 $roles[] = $ref;
             }
         }
@@ -82,36 +78,38 @@ class AppAggregate extends Aggregate
 
         $event = $this->createAppRolesRevoked($command);
         $this->copyContext($command, $event);
-        $event->set($event::NODE_REF_FIELD, $this->nodeRef);
-        $event->addToSet($event::ROLES_FIELD, $roles);
+        $event->set('node_ref', $this->nodeRef);
+        $event->addToSet('roles', $roles);
 
         $this->recordEvent($event);
     }
 
     protected function applyAppRolesGranted(Message $event): void
     {
-        $this->node->addToSet(
-            AppV1Mixin::ROLES_FIELD,
-            $event->get(AppRolesGrantedV1::ROLES_FIELD, [])
-        );
+        $this->node->addToSet('roles', $event->get('roles', []));
     }
 
     protected function applyAppRolesRevoked(Message $event): void
     {
-        $this->node->removeFromSet(
-            AppV1Mixin::ROLES_FIELD,
-            $event->get(AppRolesRevokedV1::ROLES_FIELD, [])
-        );
+        $this->node->removeFromSet('roles', $event->get('roles', []));
     }
 
     protected function enrichNodeUpdated(Message $event): void
     {
+        /** @var Message $oldNode */
+        $oldNode = $event->get('old_node');
+
         /** @var Message $newNode */
-        $newNode = $event->get(NodeUpdatedV1::NEW_NODE_FIELD);
+        $newNode = $event->get('new_node');
+
+        $newNode
+            // roles SHOULD NOT change during an update
+            ->clear('roles')
+            ->addToSet('roles', $oldNode->get('roles', []));
 
         // apps are only published or deleted, enforce it.
-        if (NodeStatus::DELETED !== $newNode->fget(NodeV1Mixin::STATUS_FIELD)) {
-            $newNode->set(NodeV1Mixin::STATUS_FIELD, NodeStatus::PUBLISHED());
+        if (NodeStatus::DELETED !== $newNode->fget('status')) {
+            $newNode->set('status', NodeStatus::PUBLISHED());
         }
 
         parent::enrichNodeUpdated($event);

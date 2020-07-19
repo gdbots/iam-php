@@ -12,8 +12,6 @@ use Gdbots\QueryParser\Node\Field;
 use Gdbots\QueryParser\Node\Word;
 use Gdbots\QueryParser\ParsedQuery;
 use Gdbots\Schemas\Common\Enum\Trinary;
-use Gdbots\Schemas\Iam\Mixin\SearchUsersRequest\SearchUsersRequestV1Mixin;
-use Gdbots\Schemas\Iam\Request\SearchUsersRequestV1;
 use Gdbots\Schemas\Iam\Request\SearchUsersResponseV1;
 
 class SearchUsersRequestHandler extends AbstractSearchNodesRequestHandler
@@ -21,8 +19,8 @@ class SearchUsersRequestHandler extends AbstractSearchNodesRequestHandler
     public static function handlesCuries(): array
     {
         // deprecated mixins, will be removed in 3.x
-        $curies = MessageResolver::findAllUsingMixin(SearchUsersRequestV1Mixin::SCHEMA_CURIE_MAJOR, false);
-        $curies[] = SearchUsersRequestV1::SCHEMA_CURIE;
+        $curies = MessageResolver::findAllUsingMixin('gdbots:iam:mixin:search-users-request:v1', false);
+        $curies[] = 'gdbots:iam:request:search-users-request';
         return $curies;
     }
 
@@ -31,7 +29,7 @@ class SearchUsersRequestHandler extends AbstractSearchNodesRequestHandler
         parent::beforeSearchNodes($request, $parsedQuery);
 
         $required = BoolOperator::REQUIRED();
-        foreach ([SearchUsersRequestV1::IS_STAFF_FIELD, SearchUsersRequestV1::IS_BLOCKED_FIELD] as $trinary) {
+        foreach (['is_staff', 'is_blocked'] as $trinary) {
             if (Trinary::UNKNOWN !== $request->get($trinary)) {
                 $parsedQuery->addNode(
                     new Field(

@@ -4,9 +4,7 @@ declare(strict_types=1);
 namespace Gdbots\Iam;
 
 use Gdbots\Pbj\Message;
-use Gdbots\Schemas\Iam\Mixin\Role\RoleV1Mixin;
 use Gdbots\Schemas\Iam\RoleId;
-use Gdbots\Schemas\Ncr\Mixin\Node\NodeV1Mixin;
 
 final class Policy implements \JsonSerializable
 {
@@ -26,9 +24,9 @@ final class Policy implements \JsonSerializable
     public function __construct(array $roles = [])
     {
         foreach ($roles as $role) {
-            $this->roles[$role->fget(NodeV1Mixin::_ID_FIELD)] = true;
-            $this->allowed = array_merge($this->allowed, $role->fget(RoleV1Mixin::ALLOWED_FIELD, []));
-            $this->denied = array_merge($this->denied, $role->fget(RoleV1Mixin::DENIED_FIELD, []));
+            $this->roles[$role->fget('_id')] = true;
+            $this->allowed = array_merge($this->allowed, $role->fget('allowed', []));
+            $this->denied = array_merge($this->denied, $role->fget('denied', []));
         }
 
         $this->allowed = array_flip($this->allowed);

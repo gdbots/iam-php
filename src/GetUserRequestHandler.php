@@ -11,36 +11,33 @@ use Gdbots\Pbj\Message;
 use Gdbots\Pbj\MessageResolver;
 use Gdbots\Pbj\SchemaQName;
 use Gdbots\Pbjx\Pbjx;
-use Gdbots\Schemas\Iam\Mixin\GetUserRequest\GetUserRequestV1Mixin;
-use Gdbots\Schemas\Iam\Request\GetUserRequestV1;
 use Gdbots\Schemas\Iam\Request\GetUserResponseV1;
 use Gdbots\Schemas\Ncr\Enum\NodeStatus;
-use Gdbots\Schemas\Ncr\Mixin\Node\NodeV1Mixin;
 
 class GetUserRequestHandler extends GetNodeRequestHandler
 {
     public static function handlesCuries(): array
     {
         // deprecated mixins, will be removed in 3.x
-        $curies = MessageResolver::findAllUsingMixin(GetUserRequestV1Mixin::SCHEMA_CURIE_MAJOR, false);
-        $curies[] = GetUserRequestV1::SCHEMA_CURIE;
+        $curies = MessageResolver::findAllUsingMixin('gdbots:iam:mixin:get-user-request:v1', false);
+        $curies[] = 'gdbots:iam:request:get-user-request';
         return $curies;
     }
 
     public function handleRequest(Message $request, Pbjx $pbjx): Message
     {
-        if (!$request->has(GetUserRequestV1::EMAIL_FIELD)) {
+        if (!$request->has('email')) {
             return parent::handleRequest($request, $pbjx);
         }
 
         $response = $this->createGetNodeResponse($request, $pbjx);
-        $consistent = $request->get(GetUserRequestV1::CONSISTENT_READ_FIELD);
+        $consistent = $request->get('consistent_read');
         $context = ['causator' => $request];
 
-        $qname = SchemaQName::fromString($request->get(GetUserRequestV1::QNAME_FIELD));
-        $query = IndexQueryBuilder::create($qname, 'email', $request->get(GetUserRequestV1::EMAIL_FIELD))
+        $qname = SchemaQName::fromString($request->get('qname'));
+        $query = IndexQueryBuilder::create($qname, 'email', $request->get('email'))
             ->setCount(1)
-            ->filterEq(NodeV1Mixin::STATUS_FIELD, NodeStatus::PUBLISHED)
+            ->filterEq('status', NodeStatus::PUBLISHED)
             ->build();
         $result = $this->ncr->findNodeRefs($query, $context);
         if (!$result->count()) {
@@ -55,7 +52,7 @@ class GetUserRequestHandler extends GetNodeRequestHandler
             $node = $aggregate->getNode();
         }
 
-        return $response->set(GetUserResponseV1::NODE_FIELD, $node);
+        return $response->set('node', $node);
     }
 
     protected function createGetNodeResponse(Message $request, Pbjx $pbjx): Message

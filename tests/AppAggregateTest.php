@@ -22,8 +22,8 @@ final class AppAggregateTest extends AbstractPbjxTest
         ]);
         $aggregate = AppAggregate::fromNode($node, $this->pbjx);
         $command = GrantRolesToAppV1::create()
-            ->set(GrantRolesToAppV1::NODE_REF_FIELD, $node->generateNodeRef())
-            ->addToSet(GrantRolesToAppV1::ROLES_FIELD, [
+            ->set('node_ref', $node->generateNodeRef())
+            ->addToSet('roles', [
                 NodeRef::fromString('acme:role:admin'),
                 NodeRef::fromString('acme:role:tester'),
             ]);
@@ -36,14 +36,14 @@ final class AppAggregateTest extends AbstractPbjxTest
         $this->assertEquals($expectedEvent, $actualEvent::SCHEMA_CURIE);
 
         $expectedRoles = [NodeRef::fromString('acme:role:tester')];
-        $actualRoles = $actualEvent->get(AppRolesGrantedV1::ROLES_FIELD);
+        $actualRoles = $actualEvent->get('roles');
         $this->assertEquals($expectedRoles, $actualRoles);
 
         $expectedRoles = [
             NodeRef::fromString('acme:role:admin'),
             NodeRef::fromString('acme:role:tester'),
         ];
-        $actualRoles = $aggregate->getNode()->get(IosAppV1::ROLES_FIELD);
+        $actualRoles = $aggregate->getNode()->get('roles');
         $this->assertEquals($expectedRoles, $actualRoles);
     }
 
@@ -58,8 +58,8 @@ final class AppAggregateTest extends AbstractPbjxTest
         ]);
         $aggregate = AppAggregate::fromNode($node, $this->pbjx);
         $command = GrantRolesToAppV1::create()
-            ->set(GrantRolesToAppV1::NODE_REF_FIELD, $node->generateNodeRef())
-            ->addToSet(GrantRolesToAppV1::ROLES_FIELD, [
+            ->set('node_ref', $node->generateNodeRef())
+            ->addToSet('roles', [
                 NodeRef::fromString('acme:role:admin'),
             ]);
         $aggregate->revokeRolesFromApp($command);
@@ -71,13 +71,13 @@ final class AppAggregateTest extends AbstractPbjxTest
         $this->assertEquals($expectedEvent, $actualEvent::SCHEMA_CURIE);
 
         $expectedRoles = [NodeRef::fromString('acme:role:admin')];
-        $actualRoles = $actualEvent->get(AppRolesRevokedV1::ROLES_FIELD);
+        $actualRoles = $actualEvent->get('roles');
         $this->assertEquals($expectedRoles, $actualRoles);
 
         $expectedRoles = [
             NodeRef::fromString('acme:role:tester'),
         ];
-        $actualRoles = $aggregate->getNode()->get(IosAppV1::ROLES_FIELD);
+        $actualRoles = $aggregate->getNode()->get('roles');
         $this->assertEquals($expectedRoles, $actualRoles);
     }
 }

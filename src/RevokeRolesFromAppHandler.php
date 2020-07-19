@@ -10,8 +10,6 @@ use Gdbots\Pbj\MessageResolver;
 use Gdbots\Pbj\WellKnown\NodeRef;
 use Gdbots\Pbjx\CommandHandler;
 use Gdbots\Pbjx\Pbjx;
-use Gdbots\Schemas\Iam\Command\RevokeRolesFromAppV1;
-use Gdbots\Schemas\Iam\Mixin\RevokeRolesFromApp\RevokeRolesFromAppV1Mixin;
 
 class RevokeRolesFromAppHandler implements CommandHandler
 {
@@ -20,8 +18,8 @@ class RevokeRolesFromAppHandler implements CommandHandler
     public static function handlesCuries(): array
     {
         // deprecated mixins, will be removed in 3.x
-        $curies = MessageResolver::findAllUsingMixin(RevokeRolesFromAppV1Mixin::SCHEMA_CURIE_MAJOR, false);
-        $curies[] = RevokeRolesFromAppV1::SCHEMA_CURIE;
+        $curies = MessageResolver::findAllUsingMixin('gdbots:iam:mixin:revoke-roles-from-app:v1', false);
+        $curies[] = 'gdbots:iam:command:revoke-roles-from-app';
         return $curies;
     }
 
@@ -33,7 +31,7 @@ class RevokeRolesFromAppHandler implements CommandHandler
     public function handleCommand(Message $command, Pbjx $pbjx): void
     {
         /** @var NodeRef $nodeRef */
-        $nodeRef = $command->get(RevokeRolesFromAppV1::NODE_REF_FIELD);
+        $nodeRef = $command->get('node_ref');
         $context = ['causator' => $command];
 
         $node = $this->ncr->getNode($nodeRef, true, $context);
