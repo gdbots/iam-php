@@ -33,7 +33,7 @@ class ListAllRolesRequestHandler implements RequestHandler
         $roles = $searchResponse->get('nodes', []);
         $refs = array_map(fn(Message $role) => $role->generateNodeRef(), $roles);
 
-        $response->addToSet('roles', $refs);
+        return $response->addToSet('roles', $refs);
     }
 
     protected function createListAllRolesResponse(Message $request, Pbjx $pbjx): Message
