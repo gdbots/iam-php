@@ -30,15 +30,14 @@ class ListAllRolesRequestHandler implements RequestHandler
             return $response;
         }
 
-        $roles = $searchResponse->get('nodes', []);
-        $refs = array_map(fn(Message $role) => $role->generateNodeRef(), $roles);
+        $nodes = $searchResponse->get('nodes', []);
+        $refs = array_map(fn(Message $node) => $node->generateNodeRef(), $nodes);
 
         return $response->addToSet('roles', $refs);
     }
 
     protected function createListAllRolesResponse(Message $request, Pbjx $pbjx): Message
     {
-        $curie = MessageResolver::findOneUsingMixin('gdbots:iam:mixin:list-all-roles-response:v1');
-        return MessageResolver::resolveCurie($curie)::create();
+        return MessageResolver::resolveCurie('*:iam:request:list-all-roles-response:v1')::create();
     }
 }

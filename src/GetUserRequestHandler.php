@@ -57,6 +57,11 @@ class GetUserRequestHandler extends GetNodeRequestHandler
 
     protected function createGetNodeResponse(Message $request, Pbjx $pbjx): Message
     {
+        $legacy = '*:iam:request:get-user-response';
+        if (MessageResolver::hasCurie($legacy)) {
+            return MessageResolver::resolveCurie($legacy)::create();
+        }
+
         return GetUserResponseV1::create();
     }
 }

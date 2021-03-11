@@ -44,6 +44,11 @@ class SearchUsersRequestHandler extends AbstractSearchNodesRequestHandler
 
     protected function createSearchNodesResponse(Message $request, Pbjx $pbjx): Message
     {
+        $legacy = '*:iam:request:search-users-response';
+        if (MessageResolver::hasCurie($legacy)) {
+            return MessageResolver::resolveCurie($legacy)::create();
+        }
+
         return SearchUsersResponseV1::create();
     }
 }

@@ -2,6 +2,10 @@
 This changelog references the relevant changes done in 2.x versions.
 
 
+## v2.1.1
+* Fix bug in ListAllRolesRequestHandler that didn't return the response.
+
+
 ## v2.1.0
 * Remove use of mixin/message constants for fields and schema refs as it's too noisy and isn't enough of a help to warrant it.
 * Uses `"gdbots/ncr": "^2.1"`

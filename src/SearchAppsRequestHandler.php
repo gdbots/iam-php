@@ -38,6 +38,11 @@ class SearchAppsRequestHandler extends AbstractSearchNodesRequestHandler
 
     protected function createSearchNodesResponse(Message $request, Pbjx $pbjx): Message
     {
+        $legacy = '*:iam:request:get-all-apps-response';
+        if (MessageResolver::hasCurie($legacy)) {
+            return MessageResolver::resolveCurie($legacy)::create();
+        }
+
         return SearchAppsResponseV1::create();
     }
 }

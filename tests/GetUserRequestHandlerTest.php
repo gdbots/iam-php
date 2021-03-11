@@ -9,7 +9,6 @@ use Gdbots\Ncr\Exception\NodeNotFound;
 use Gdbots\Pbj\SchemaQName;
 use Gdbots\Pbj\WellKnown\NodeRef;
 use Gdbots\Schemas\Iam\Request\GetUserRequestV1;
-use Gdbots\Schemas\Iam\Request\GetUserResponseV1;
 
 final class GetUserRequestHandlerTest extends AbstractPbjxTest
 {
@@ -26,7 +25,6 @@ final class GetUserRequestHandlerTest extends AbstractPbjxTest
         $handler = new GetUserRequestHandler($this->ncr);
         $response = $handler->handleRequest($request, $this->pbjx);
 
-        $this->assertSame(GetUserResponseV1::schema(), $response::schema());
         $this->assertSame($nodeRef->getId(), (string)$response->get('node')->get('_id'));
     }
 
@@ -64,7 +62,6 @@ final class GetUserRequestHandlerTest extends AbstractPbjxTest
         $handler = new GetUserRequestHandler($this->ncr);
         $response = $handler->handleRequest($request, $this->pbjx);
 
-        $this->assertSame(GetUserResponseV1::schema(), $response::schema());
         $this->assertSame($nodeRef->getId(), (string)$response->get('node')->get('_id'));
     }
 
