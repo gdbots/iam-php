@@ -16,10 +16,7 @@ class SearchAppsRequestHandler extends AbstractSearchNodesRequestHandler
 {
     public static function handlesCuries(): array
     {
-        // deprecated mixins, will be removed in 3.x
-        $curies = MessageResolver::findAllUsingMixin('gdbots:iam:mixin:get-all-apps-request:v1', false);
-        $curies[] = 'gdbots:iam:request:search-apps-request';
-        return $curies;
+        return ['gdbots:iam:request:search-apps-request'];
     }
 
     protected function createQNamesForSearchNodes(Message $request, ParsedQuery $parsedQuery): array
@@ -38,11 +35,6 @@ class SearchAppsRequestHandler extends AbstractSearchNodesRequestHandler
 
     protected function createSearchNodesResponse(Message $request, Pbjx $pbjx): Message
     {
-        $legacy = '*:iam:request:get-all-apps-response';
-        if (MessageResolver::hasCurie($legacy)) {
-            return MessageResolver::resolveCurie($legacy)::create();
-        }
-
         return SearchAppsResponseV1::create();
     }
 }

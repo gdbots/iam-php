@@ -2,6 +2,10 @@
 This changelog references the relevant changes done in 2.x versions.
 
 
+## v2.1.2
+* Add GetAllAppsRequestHandler for deprecated `gdbots:iam:mixin:get-all-apps-request:v1` requests.
+
+
 ## v2.1.1
 * Fix bug in ListAllRolesRequestHandler that didn't return the response.
 
