@@ -22,18 +22,22 @@ class ListAllRolesRequestHandler implements RequestHandler
     public function handleRequest(Message $request, Pbjx $pbjx): Message
     {
         $response = $this->createListAllRolesResponse($request, $pbjx);
-        $searchRequest = SearchRolesRequestV1::create();
+        $searchRequest = SearchRolesRequestV1::create()->set('count', 255);
 
-        try {
-            $searchResponse = $pbjx->copyContext($request, $searchRequest)->request($searchRequest);
-        } catch (\Throwable $e) {
-            return $response;
-        }
+        do {
+            try {
+                $searchResponse = $pbjx->copyContext($request, $searchRequest)->request($searchRequest);
+            } catch (\Throwable $e) {
+                return $response;
+            }
 
-        $nodes = $searchResponse->get('nodes', []);
-        $refs = array_map(fn(Message $node) => $node->generateNodeRef(), $nodes);
+            $nodes = $searchResponse->get('nodes', []);
+            $refs = array_map(fn(Message $node) => $node->generateNodeRef(), $nodes);
+            $response->addToSet('roles', $refs);
+            $searchRequest = (clone $searchRequest)->set('page', $searchRequest->get('page') + 1);
+        } while ($searchResponse->get('has_more'));
 
-        return $response->addToSet('roles', $refs);
+        return $response;
     }
 
     protected function createListAllRolesResponse(Message $request, Pbjx $pbjx): Message

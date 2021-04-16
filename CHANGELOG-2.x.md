@@ -2,6 +2,10 @@
 This changelog references the relevant changes done in 2.x versions.
 
 
+## v2.1.3
+* Fix bug in ListAllRolesRequestHandler that was only returning the first page of search response.
+
+
 ## v2.1.2
 * Add GetAllAppsRequestHandler for deprecated `gdbots:iam:mixin:get-all-apps-request:v1` requests.
 
