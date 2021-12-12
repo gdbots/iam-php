@@ -9,6 +9,6 @@ final class UserAlreadyExists extends \RuntimeException implements GdbotsIamExce
 {
     public function __construct(string $message = 'User already exists.')
     {
-        parent::__construct($message, Code::ALREADY_EXISTS);
+        parent::__construct($message, Code::ALREADY_EXISTS->value);
     }
 }

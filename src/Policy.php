@@ -40,7 +40,7 @@ final class Policy implements \JsonSerializable
      *
      * @return bool
      */
-    public function hasRole($id): bool
+    public function hasRole(RoleId|string $id): bool
     {
         return isset($this->roles[(string)$id]);
     }
@@ -80,7 +80,7 @@ final class Policy implements \JsonSerializable
         return false;
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): array
     {
         return [
             'roles'   => array_keys($this->roles),

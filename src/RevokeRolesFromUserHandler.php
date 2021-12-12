@@ -17,7 +17,7 @@ class RevokeRolesFromUserHandler implements CommandHandler
 
     public static function handlesCuries(): array
     {
-        // deprecated mixins, will be removed in 3.x
+        // deprecated mixins, will be removed in 4.x
         $curies = MessageResolver::findAllUsingMixin('gdbots:iam:mixin:revoke-roles-from-user:v1', false);
         $curies[] = 'gdbots:iam:command:revoke-roles-from-user';
         return $curies;

@@ -18,7 +18,7 @@ class SearchUsersRequestHandler extends AbstractSearchNodesRequestHandler
 {
     public static function handlesCuries(): array
     {
-        // deprecated mixins, will be removed in 3.x
+        // deprecated mixins, will be removed in 4.x
         $curies = MessageResolver::findAllUsingMixin('gdbots:iam:mixin:search-users-request:v1', false);
         $curies[] = 'gdbots:iam:request:search-users-request';
         return $curies;
@@ -28,13 +28,13 @@ class SearchUsersRequestHandler extends AbstractSearchNodesRequestHandler
     {
         parent::beforeSearchNodes($request, $parsedQuery);
 
-        $required = BoolOperator::REQUIRED();
+        $required = BoolOperator::REQUIRED;
         foreach (['is_staff', 'is_blocked'] as $trinary) {
-            if (Trinary::UNKNOWN !== $request->get($trinary)) {
+            if (Trinary::UNKNOWN->value !== $request->get($trinary)) {
                 $parsedQuery->addNode(
                     new Field(
                         $trinary,
-                        new Word(Trinary::TRUE_VAL === $request->get($trinary) ? 'true' : 'false', $required),
+                        new Word(Trinary::TRUE_VAL->value === $request->get($trinary) ? 'true' : 'false', $required),
                         $required
                     )
                 );

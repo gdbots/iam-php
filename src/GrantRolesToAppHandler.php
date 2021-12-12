@@ -17,7 +17,7 @@ class GrantRolesToAppHandler implements CommandHandler
 
     public static function handlesCuries(): array
     {
-        // deprecated mixins, will be removed in 3.x
+        // deprecated mixins, will be removed in 4.x
         $curies = MessageResolver::findAllUsingMixin('gdbots:iam:mixin:grant-roles-to-app:v1', false);
         $curies[] = 'gdbots:iam:command:grant-roles-to-app';
         return $curies;

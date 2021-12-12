@@ -19,8 +19,8 @@ class AppAggregate extends Aggregate
     {
         parent::__construct($node, $pbjx, $syncAllEvents);
         // apps are only published or deleted, enforce it.
-        if (NodeStatus::DELETED !== $this->node->fget('status')) {
-            $this->node->set('status', NodeStatus::PUBLISHED());
+        if (NodeStatus::DELETED->value !== $this->node->fget('status')) {
+            $this->node->set('status', NodeStatus::PUBLISHED);
         }
     }
 
@@ -108,8 +108,8 @@ class AppAggregate extends Aggregate
             ->addToSet('roles', $oldNode->get('roles', []));
 
         // apps are only published or deleted, enforce it.
-        if (NodeStatus::DELETED !== $newNode->fget('status')) {
-            $newNode->set('status', NodeStatus::PUBLISHED());
+        if (NodeStatus::DELETED->value !== $newNode->fget('status')) {
+            $newNode->set('status', NodeStatus::PUBLISHED);
         }
 
         parent::enrichNodeUpdated($event);
@@ -117,13 +117,13 @@ class AppAggregate extends Aggregate
 
     /**
      * This is for legacy uses of command/event mixins for common
-     * ncr operations. It will be removed in 3.x.
+     * ncr operations. It will be removed in 4.x.
      *
      * @param Message $command
      *
      * @return Message
      *
-     * @deprecated Will be removed in 3.x.
+     * @deprecated Will be removed in 4.x.
      */
     protected function createAppRolesGranted(Message $command): Message
     {
@@ -132,13 +132,13 @@ class AppAggregate extends Aggregate
 
     /**
      * This is for legacy uses of command/event mixins for common
-     * ncr operations. It will be removed in 3.x.
+     * ncr operations. It will be removed in 4.x.
      *
      * @param Message $command
      *
      * @return Message
      *
-     * @deprecated Will be removed in 3.x.
+     * @deprecated Will be removed in 4.x.
      */
     protected function createAppRolesRevoked(Message $command): Message
     {
@@ -147,7 +147,7 @@ class AppAggregate extends Aggregate
 
     /**
      * This is for legacy uses of command/event mixins for common
-     * ncr operations. It will be removed in 3.x.
+     * ncr operations. It will be removed in 4.x.
      *
      * @param string $name
      * @param array  $arguments
