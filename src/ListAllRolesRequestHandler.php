@@ -10,7 +10,7 @@ use Gdbots\Pbjx\RequestHandler;
 use Gdbots\Schemas\Iam\Request\SearchRolesRequestV1;
 
 /**
- * @deprecated will be removed in 3.x
+ * @deprecated will be removed in 4.x
  */
 class ListAllRolesRequestHandler implements RequestHandler
 {

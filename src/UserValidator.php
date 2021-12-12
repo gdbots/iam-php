@@ -16,7 +16,7 @@ use Gdbots\Schemas\Pbjx\Enum\Code;
 
 class UserValidator implements EventSubscriber, PbjxValidator
 {
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [
             'gdbots:iam:mixin:user.validate' => 'validate',
@@ -100,7 +100,7 @@ class UserValidator implements EventSubscriber, PbjxValidator
 
             $response = $pbjx->copyContext($command, $request)->request($request);
         } catch (RequestHandlingFailed $e) {
-            if (Code::NOT_FOUND === $e->getCode()) {
+            if (Code::NOT_FOUND->value === $e->getCode()) {
                 // this is what we want
                 return;
             }

@@ -16,8 +16,8 @@ class RoleAggregate extends Aggregate
         $this->node->set('title', $this->nodeRef->getId());
 
         // roles are only published or deleted, enforce it.
-        if (NodeStatus::DELETED !== $this->node->fget('status')) {
-            $this->node->set('status', NodeStatus::PUBLISHED());
+        if (NodeStatus::DELETED->value !== $this->node->fget('status')) {
+            $this->node->set('status', NodeStatus::PUBLISHED);
         }
     }
 
@@ -41,8 +41,8 @@ class RoleAggregate extends Aggregate
         $newNode->set('title', $this->nodeRef->getId());
 
         // roles are only published or deleted, enforce it.
-        if (NodeStatus::DELETED !== $newNode->fget('status')) {
-            $newNode->set('status', NodeStatus::PUBLISHED());
+        if (NodeStatus::DELETED->value !== $newNode->fget('status')) {
+            $newNode->set('status', NodeStatus::PUBLISHED);
         }
 
         parent::enrichNodeUpdated($event);
@@ -50,7 +50,7 @@ class RoleAggregate extends Aggregate
 
     /**
      * This is for legacy uses of command/event mixins for common
-     * ncr operations. It will be removed in 3.x.
+     * ncr operations. It will be removed in 4.x.
      *
      * @param string $name
      * @param array  $arguments
